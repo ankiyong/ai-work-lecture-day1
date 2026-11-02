@@ -408,8 +408,22 @@ svg .flowline{stroke-dasharray:12 12}
     if (!document.body.classList.contains("overview")) return;
     var s = ev.target.closest(".slide");
     if (!s) return;
+    ev.stopPropagation();
     cur = slides.indexOf(s); step = 0;
     overview(false);
+  });
+
+  /* 포인터: 왼쪽 클릭은 다음, 오른쪽 클릭은 이전. 링크·버튼 클릭과 글자 선택은 넘기지 않는다 */
+  vp.addEventListener("click", function (ev) {
+    if (document.body.classList.contains("overview")) return;
+    if (ev.target.closest("a,button")) return;
+    if (String(window.getSelection())) return;
+    next();
+  });
+  vp.addEventListener("contextmenu", function (ev) {
+    if (document.body.classList.contains("overview")) return;
+    ev.preventDefault();
+    prev();
   });
 
   var x0 = null;
