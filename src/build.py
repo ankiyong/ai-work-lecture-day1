@@ -102,7 +102,9 @@ class Deck:
 
 
 def add_sec(d, s):
-    if s.kind == "sub":
+    if s.kind == "image":
+        d.items.append(("image-slide", s.title, 0, f'<div class="imgonly"><img src="../assets/{s.kicker}" alt="{e(s.body)}"></div>'))
+    elif s.kind == "sub":
         d.dark(f'<h2 class="anim">{e(s.title)}</h2><p class="subt anim anim2">{e(s.kicker)}</p>', s.title, "sub")
     else:
         d.content(s)

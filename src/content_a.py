@@ -69,10 +69,9 @@ def m01():
                     card("후속 질문에 답변", "오류 인정·전제 지적", "부적절한 요청 거절", big="대화"),
                     card("사람 피드백 강화학습", "사람이 평가한 답변으로 조정", "기술보다 '사용 방식'이 변화", big="RLHF"), n=2) + "</div>"
             + source("출처: Reuters(Euronews, 2023.2.2·UBS 추정), TechCrunch(2026.2.27), GIGAZINE(2022.12.1, OpenAI 발표 소개)"), role="i"),
-        Sec([10, 11, 12], "반성도 AI가 하는 시대", "01-2 · 이미 생긴 변화들",
-            cards(card("언론 보도", "챗GPT가 쓴 시말서가 온라인에서 화제가 되었다는 기사"),
-                  card("익명 게시글", "챗GPT로 쓴 시말서를 내도 괜찮은지 묻는 직장인의 글과 시말서 사진"),
-                  card("시말서 작성 도우미", "시말서를 대신 써 주는 GPT 서비스가 등장")), role="i"),
+        Sec(10, "반성도 AI가 하는 시대", "reflection-1.webp", "챗GPT가 쓴 시말서가 화제라는 신문 기사와 익명 게시글 캡처", role="i", kind="image"),
+        Sec(11, "반성도 AI가 하는 시대", "reflection-2.webp", "챗GPT로 쓴 시말서를 내도 괜찮은지 묻는 익명 게시글과 시말서 사진", role="i", kind="image"),
+        Sec(12, "반성도 AI가 하는 시대", "reflection-3.png", "시말서 작성 도우미 GPT 소개 화면", role="i", kind="image"),
         Sec(13, "AI 오류의 책임은 제출자에게 돌아온다", "01-2 · 이미 생긴 변화들",
             '<div class="split">' + card("", "237쪽 보고서, 2025년 7월 공개", "가짜 판결 인용·없는 논문 인용", "마지막 지급분 반환 (부분 환불)", big="44만", unit="AUD", tag="호주 정부 보고서 대금", dark=True)
             + cards(card("외부 연구자가 오류 제기", big="최대 20건", tag="발견"), card("수정본에 생성형 AI 사용 명시", big="Azure OpenAI", tag="수정"), card("계약 마지막 지급분 반환", big="부분 환불", tag="결과"), n=3) + "</div>"
