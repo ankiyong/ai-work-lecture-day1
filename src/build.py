@@ -11,6 +11,7 @@ import content_b as B
 import content_c as X
 import content_v2 as V
 import content_info as I
+import content_v3 as W
 import lib
 from lib import e
 
@@ -30,15 +31,17 @@ def modules():
 
 
 class Ver:
-    """dir: docs 아래 폴더, store: 입력 저장 이름, label: 제목 뒤 표시, extra: 모듈 번호 → 그 모듈 뒤에 장을 더하는 함수(강사 슬라이드만)."""
-    def __init__(self, dir, intro, mods, breaks, store="eid-d1:", label="", steps=None, css="", deck_css="", extra=None):
+    """dir: docs 아래 폴더, store: 입력 저장 이름, label: 제목 뒤 표시, extra: 모듈 번호 → 그 모듈 뒤에 장을 더하는 함수(강사 슬라이드만),
+    js: 수강생 페이지에 덧붙이는 스크립트."""
+    def __init__(self, dir, intro, mods, breaks, store="eid-d1:", label="", steps=None, css="", deck_css="", extra=None, js=""):
         self.dir, self.intro, self.mods, self.breaks = dir, intro, mods, breaks
         self.store, self.label, self.steps, self.css, self.deck_css = store, label, steps, css, deck_css
-        self.extra = extra or {}
+        self.extra, self.js = extra or {}, js
 
 
 V1 = Ver("", A.intro_secs, modules, BREAKS)
 V2 = Ver("v2", V.intro_secs, V.modules, V.BREAKS, "eid-d1v2:", " · 개정안", V.STEPS, V.CSS, V.DECK_CSS + I.CSS, {"05": I.add})
+V3 = Ver("v3", W.intro_secs, W.modules, W.BREAKS, "eid-d1v3:", " · 실습 개정안", W.STEPS, W.CSS, W.DECK_CSS, {"02": W.after_02}, W.JS)
 
 
 # ── 수강생 페이지 ──────────────────────────────
@@ -79,7 +82,7 @@ def student_page(v=V1):
             meta += f"<span>도구: {e(m.tool)}</span>"
         body += f'<div class="mod" id="m{m.num}"><div class="hero"><b>{m.num}</b><h2>{e(m.title)}</h2><p>{e(m.intro)}</p><div class="meta">{meta}</div></div>{rendered}</div>'
         nav += f'<details class="ng"><summary><a href="#m{m.num}" class="nm"><b>{m.num}</b>{e(m.title)}</a></summary><div>{sub}</div></details>'
-    js = JS.replace('"eid-d1:"', f'"{v.store}"')
+    js = JS.replace('"eid-d1:"', f'"{v.store}"') + v.js
     return f"""<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AI와 함께하는 업무 · 실습 안내{v.label}</title>{ROBOTS}{FONT}
@@ -161,7 +164,7 @@ def deck_page(v=V1):
 
 def main():
     out = ROOT / "docs"
-    for v in (V1, V2):
+    for v in (V1, V2, V3):
         d = out / v.dir if v.dir else out
         (d / "instructor").mkdir(parents=True, exist_ok=True)
         s, i = student_page(v), deck_page(v)
