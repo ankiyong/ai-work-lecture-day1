@@ -33,7 +33,15 @@ def after_02(d):
 
 
 def modules():
-    tail = [V.m07(), V.m08(), B.m09(), B.m10()]
+    """페이지마다 01부터 연번. 휴식은 Gemini Notebook 모듈 앞에 둔다."""
+    gem = B.m09()
+    tail = [V.m07(), V.m08(), gem, B.m10()]
     if is_i():
-        return [A.m01(), A.m02(), P.m0(), P.m1(), P.m21(), A.m04(), P.m22(), P.m3(), P.m_draft()] + tail
-    return P.modules() + tail
+        mods = [A.m01(), A.m02(), P.m0(), P.m1(), P.m21(), A.m04(), P.m22(), P.m3(), P.m_draft()] + tail
+    else:
+        mods = P.modules() + tail
+    for k, m in enumerate(mods, 1):
+        m.num = f"{k:02d}"
+    BREAKS.clear()
+    BREAKS[gem.num] = V.BREAKS["09"]
+    return mods
