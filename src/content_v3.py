@@ -1,6 +1,6 @@
 """v3: 실습을 작업 하나씩 나눈 프롬프트(content_p)로 바꾼 판.
 수강생: 신규 실습(공통 규칙 ~ ⑳ 초안) + 개정안 07~10.
-강사: 개정안 01·02 → 쉬어가기 → 신규 실습(프로세스 ~ 2-①) → 04 → 신규 2-②·3·초안 → 개정안 07~10."""
+강사: 개정안 01·02 → 신규 실습(프로세스 ~ 2-①) → 04 → 신규 2-②·3·초안 → 개정안 07·08 → 쉬어가기 → 09·10."""
 import content_a as A
 import content_b as B
 import content_info as I
@@ -25,23 +25,27 @@ def intro_secs():
     return secs
 
 
-def after_02(d):
-    """강사: 마크다운 다음에 쉬어가기, 이어서 신규 실습 프로세스 장."""
-    I.add(d)
+def after_md(d):
+    """강사: 마크다운 다음에 신규 실습 프로세스 장."""
     for s in P.intro_secs():
         d.content(s)
 
 
+EXTRA = {}  # 모듈 번호 → 그 모듈 뒤에 장을 더하는 함수. 번호가 연번으로 바뀌므로 modules()가 채운다
+
+
 def modules():
-    """페이지마다 01부터 연번. 휴식은 Gemini Notebook 모듈 앞에 둔다."""
-    gem = B.m09()
-    tail = [V.m07(), V.m08(), gem, B.m10()]
+    """페이지마다 01부터 연번. 쉬어가기는 보고서 작성·최종 검토 뒤, 휴식은 Gemini Notebook 앞에 둔다."""
+    md, write, gem = A.m02(), V.m08(), B.m09()
+    tail = [V.m07(), write, gem, B.m10()]
     if is_i():
-        mods = [A.m01(), A.m02(), P.m0(), P.m1(), P.m21(), A.m04(), P.m22(), P.m3(), P.m_draft()] + tail
+        mods = [A.m01(), md, P.m0(), P.m1(), P.m21(), A.m04(), P.m22(), P.m3(), P.m_draft()] + tail
     else:
         mods = P.modules() + tail
     for k, m in enumerate(mods, 1):
         m.num = f"{k:02d}"
     BREAKS.clear()
     BREAKS[gem.num] = V.BREAKS["09"]
+    EXTRA.clear()
+    EXTRA.update({md.num: after_md, write.num: I.add})
     return mods

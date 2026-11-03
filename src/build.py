@@ -36,12 +36,12 @@ class Ver:
     def __init__(self, dir, intro, mods, breaks, store="eid-d1:", label="", steps=None, css="", deck_css="", extra=None, js=""):
         self.dir, self.intro, self.mods, self.breaks = dir, intro, mods, breaks
         self.store, self.label, self.steps, self.css, self.deck_css = store, label, steps, css, deck_css
-        self.extra, self.js = extra or {}, js
+        self.extra, self.js = {} if extra is None else extra, js
 
 
 V1 = Ver("", A.intro_secs, modules, BREAKS)
 V2 = Ver("v2", V.intro_secs, V.modules, V.BREAKS, "eid-d1v2:", " · 개정안", V.STEPS, V.CSS, V.DECK_CSS + I.CSS, {"05": I.add})
-V3 = Ver("v3", W.intro_secs, W.modules, W.BREAKS, "eid-d1v3:", " · 실습 개정안", W.STEPS, W.CSS, W.DECK_CSS, {"02": W.after_02}, W.JS)
+V3 = Ver("v3", W.intro_secs, W.modules, W.BREAKS, "eid-d1v3:", " · 실습 개정안", W.STEPS, W.CSS, W.DECK_CSS, W.EXTRA, W.JS)
 
 
 # ── 수강생 페이지 ──────────────────────────────
