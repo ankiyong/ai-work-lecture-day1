@@ -18,31 +18,38 @@ REQ = {"1": True, "2-①": False, "2-②": True, "3": False, "초안": True}
 RULES = """너는 내가 보고서를 준비하는 과정에서 사용하는 보조 도구다.
 
 작업 원칙:
-1. 내가 이번에 요청한 작업 하나만 수행한다.
-2. 요청한 결과물을 출력한 뒤 멈춘다.
-3. 다음 단계의 작업이나 해결방안을 미리 수행하지 않는다.
-4. 문제·목표·대안·적용 여부·계획은 내가 판단하고 결정한다.
-5. 내가 확정했다고 명시한 내용만 확정 사항으로 취급한다.
-6. 내 경험이나 주장을 외부 자료로 검증된 사실처럼 표현하지 않는다.
-7. 없는 사실·수치·출처·결정을 추정해 채우지 않는다.
-8. 작업에 필수적인 입력이 없으면 질문 하나만 하고 답을 기다린다.
-9. 새로운 자료조사는 내가 검색을 요청한 작업에서만 수행한다."""
-RULE_GROUPS = [("g1", "작업 범위", (1, 2, 3), "하나만 하고 멈춘다"), ("g2", "결정은 나", (4, 5), "판단·확정은 사용자"),
-               ("g3", "사실 지키기", (6, 7), "검증 안 된 것을 사실처럼 쓰지 않는다"), ("g4", "질문·조사", (8, 9), "질문은 하나, 검색은 요청할 때만")]
+1. 요청 범위 준수: 사용자가 요청한 범위 내에서 충실히 작업하되, 요청에 포함된 하위 항목(예: 분석 + 후보 추천 등)은 생략 없이 함께 수행한다.
+2. 단계별 진행: 명시적인 다음 단계나 최종 해결책으로 미리 건너뛰지 않고, 현재 단계의 과제에 집중한다.
+3. 사용자 결정권 존중: 문제 정의, 목표, 대안 선택, 최종 계획 등 주요 의사결정은 사용자가 직접 판단할 수 있도록 선택지나 참고 자료 형태로 지원한다.
+4. 확정 내용 구분: 사용자가 확정했다고 명시한 사항만 사실 및 전제로 취급한다.
+5. 객관성 유지: 사용자의 경험이나 주장을 다룰 때는 '관찰/주장'임을 명확히 구별하여 표현한다.
+6. 추정 지양: 확인되지 않은 사실, 수치, 출처는 자의적으로 메우지 않고 미확인 상태임을 밝힌다.
+7. 필요시 정보 확인: 작업 수행 중 필수적인 입력이나 명확한 방향 설정이 부족할 경우 핵심 질문을 전달한다.
+8. 자료조사 연계: 검색 및 외부 자료 조사는 사용자가 요청하거나 동의한 범위 내에서 수행한다.
+9. 누적 정리: 같은 대화의 모든 답변 끝에 지금까지 정리된 사항을 아래 '보고서 준비 현황표'로 이어서 보여준다. '~만 출력해줘'라고 요청한 작업에서도 현황표는 함께 보여주고, 이번 답변에서 새로 채우거나 바뀐 칸은 ★로 표시한다. 내가 확정했다고 말한 내용만 '확정'으로 적는다.
+
+보고서 준비 현황표 (표 하나):
+열: 항목 / 내용 요약 / 상태 / 근거·출처
+항목: 문제의식, 핵심 문제, 대상·범위, 보고 목적, 규정·선례, 목표, 선택한 대안, 실행·평가 계획, 확인 필요 사항
+상태: 확정 · 후보 · 미정 · 미확인 (아직 다루지 않은 항목은 미정)"""
+STATUS_ITEMS = ["문제의식", "핵심 문제", "대상·범위", "보고 목적", "규정·선례", "목표", "선택한 대안", "실행·평가 계획", "확인 필요 사항"]
+RULE_GROUPS = [("g1", "작업 범위", (1, 2), "요청한 것은 빠짐없이, 다음 단계는 미리 하지 않는다"), ("g2", "결정은 나", (3, 4), "AI는 선택지·자료로 돕고, 확정은 사용자"),
+               ("g3", "사실 지키기", (5, 6), "관찰·주장은 구별하고, 미확인은 미확인으로"), ("g4", "질문·조사", (7, 8), "부족하면 핵심 질문, 조사는 요청·동의 범위에서"),
+               ("g5", "이어 보기", (9,), "답변마다 현황표로 지금까지를 다시 보여 준다")]
 
 # (번호, 단계, 제목, 결과물, AI가 하지 않는 것, 프롬프트, 앞 안내, 뒤 안내)
 TASKS = [
-    (1, "1", "입력 내용 분류", "분류표 하나", "우선순위 정하기·해결방안 제안", """아래 내용을 분류하는 작업만 해줘.
+    (1, "1", "문제의식 정리", "분류표 + 핵심 문제 후보 3가지", "해결방안 제안·문제 최종 선택", """아래 내용을 분류하고, 핵심 문제 파악을 도와줘.
 
 [내 경험·관찰·생각]
-[[#내 경험·관찰·생각|여기에 입력|예: 안내문이 어려워서 민원인이 반복 질문하는 것 같다]]
+[[#내 경험·관찰·생각|여기에 입력|예: 안내문이 어려워 민원인이 반복 질문을 한다]]
 
 결과는 다음 표 하나로 작성해줘.
 입력 내용 / 사실에 관한 진술·해석·미확인 중 구분 /
 제공된 근거 또는 확인 상태
 
 내가 관찰했다고 적은 내용과 자료로 확인된 사실을 구분해줘.
-문제의 우선순위를 정하거나 해결방안을 제안하지 마.""", "", ""),
+구분된 내용을 바탕으로 내가 가지고 있는 핵심 문제 후보 3가지 추천해줘.""", "", "후보 중 어느 것을 고를지는 내가 정합니다. 고른 문제는 ③에서 한 문장으로 정리합니다."),
     (2, "1", "부족한 정보 질문", "질문 하나", "답이나 판단을 대신 제시", """앞서 정리한 내용을 바탕으로,
 핵심 문제와 보고 목적을 정하는 데 필요한 질문 하나만 해줘.
 
@@ -55,11 +62,11 @@ TASKS = [
 [[#내가 선택한 문제|여기에 입력]]
 
 [반드시 유지할 대상과 범위]
-[[#반드시 유지할 대상과 범위|여기에 입력]]
+[[#반드시 유지할 대상과 범위|여기에 입력|예: 처음 신청하는 개인 신청인 · 접수 단계 보완요청만 (심사·수수료 제외)]]
 
 내 선택의 의미와 범위를 유지해줘.
 확인되지 않은 원인이나 문제의 규모는 덧붙이지 마.
-결과는 문제 정의 한 문장만 출력해줘.""", "", ""),
+결과는 문제 정의 한 문장만 출력해줘.""", "", "반드시 유지할 대상과 범위 = AI가 넓히면 안 되는 경계입니다. 누구(문제를 겪는 사람)·어느 단계(절차 중 어디)·뺄 것만 짧게 적습니다. 원인이나 수치는 적지 않습니다."),
     (4, "1", "내가 정한 보고 목적 정리", "보고 목적 한 문장", "적지 않은 결정·추진 방향 추가", """내가 정한 보고 목적을 한 문장으로 정리해줘.
 
 [보고받는 사람]
@@ -86,7 +93,7 @@ TASKS = [
 
 원문을 열어 확인하지 못한 자료는 미확인으로 표시해줘.
 우리 업무에 적용되는지는 내가 판단하겠다.
-결과는 규정 검색 결과표만 출력해줘.""", "", "검색을 요청하는 작업입니다. 공통 규칙 9에 따라 AI는 이런 작업에서만 새로 조사합니다."),
+결과는 규정 검색 결과표만 출력해줘.""", "", "검색을 요청하는 작업입니다. 공통 규칙 8에 따라 조사는 내가 요청하거나 동의한 범위에서만 합니다."),
     (6, "2-①", "관련 선례 조사", "선례 검색 결과표", "도입 사실과 측정된 성과 섞기", """아래 조건과 관련된 행정선례·다른 기관의 실행 사례를
 기관 공식 자료에서 찾아 표로 정리해줘.
 
@@ -384,30 +391,63 @@ def m0():
     groups = "".join(f'<li class="{g}"><b>{e(t)}</b><span>{"·".join(map(str, ns))}</span><small>{e(s)}</small></li>' for g, t, ns, s in RULE_GROUPS)
     if is_i():
         gmap = {r: g for g, _, ns, _ in RULE_GROUPS for r in ns}
-        gname = {g: t for g, t, _, _ in RULE_GROUPS}
-        lines = RULES.split("\n")[3:]
-        rules = "".join(f'<li class="{gmap[k]}" style="--i:{k - 1}"><span class="rn">{k}</span><span>{e(l[3:])}</span><em>{e(gname[gmap[k]])}</em></li>'
-                        for k, l in enumerate(lines, 1))
+        lines = [l[3:].partition(": ") for l in RULES.split("\n") if l[:1].isdigit()]  # (이름, ": ", 설명)
+        rules = "".join(f'<li class="{gmap[k]}" style="--i:{k - 1}"><span class="rn">{k}</span><span><b>{e(n)}</b> {e(d)}</span></li>'
+                        for k, (n, _, d) in enumerate(lines, 1))
         body = ('<div class="i-split wide"><div class="col"><p class="rhead">너는 내가 보고서를 준비하는 과정에서 사용하는 보조 도구다.</p>'
                 f'<ol class="rules">{rules}</ol></div><div class="col">'
                 + card("한 번만 입력", "대화를 시작할 때 맨 처음 입력", "같은 대화창에서 ① 작업부터 이어 갑니다", "새 대화를 열면 다시 입력", dark=True)
-                + f'<div class="card"><h4>네 묶음</h4><ul class="rgroups">{groups}</ul></div></div></div>')
+                + f'<div class="card"><h4>다섯 묶음</h4><ul class="rgroups">{groups}</ul></div></div></div>')
     else:
+        blank = "".join(f"<tr><td>{e(x)}</td><td></td><td><span class=\"st s-0\">미정</span></td><td></td></tr>" for x in STATUS_ITEMS)
         body = (prompt("공통 규칙 · 대화 시작 때 한 번", RULES, example=False)
                 + f'<ul class="rgroups">{groups}</ul>'
-                + '<p class="tip">같은 대화창에서 ① 작업부터 이어 갑니다. 새 대화를 열면 공통 규칙을 다시 입력합니다.</p>')
-    return Mod("0", "공통 규칙 입력", "", "", "AI 작업 원칙 설정", "", "필수 · 대화를 시작할 때 한 번 입력합니다.",
-               [Sec(0, "공통 규칙: 대화 시작 때 한 번", "공통 규칙 · 필수", body, step=("규칙",))])
+                + '<h5 class="lab">답변 끝마다 이어지는 보고서 준비 현황표 (처음 모습)</h5>'
+                + f'<div class="tw"><table class="stt"><thead><tr><th>항목</th><th>내용 요약</th><th>상태</th><th>근거·출처</th></tr></thead><tbody>{blank}</tbody></table></div>'
+                + '<p class="tip">같은 대화창에서 ① 작업부터 이어 갑니다. 작업을 할 때마다 표의 빈칸이 채워지고, 바뀐 칸에는 ★가 붙습니다. 새 대화를 열면 공통 규칙을 다시 입력합니다.</p>')
+    secs = [Sec(0, "공통 규칙: 대화 시작 때 한 번", "공통 규칙 · 필수", body, step=("규칙",))]
+    if is_i():
+        secs.append(status_sec())
+    return Mod("0", "공통 규칙 입력", "", "", "AI 작업 원칙 설정", "", "필수 · 대화를 시작할 때 한 번 입력합니다.", secs)
+
+
+def status_sec():
+    """강사: 한 채팅에서 현황표가 ①→③→④를 지나며 채워지는 모습 (클릭마다 한 단계)."""
+    # 항목: (단계별 (내용, 상태, 바뀜) — 단계 0: ① 뒤, 1: ③ 뒤, 2: ④ 뒤)
+    obs = ("안내문이 어려워 반복 질문 (내 관찰)", "미확인")
+    rows = {
+        "문제의식": [obs + (1,), obs + (0,), obs + (0,)],
+        "핵심 문제": [("후보 3가지", "후보", 1), ("신청서 작성 안내 탓 보완요청 반복", "확정", 1), ("신청서 작성 안내 탓 보완요청 반복", "확정", 0)],
+        "대상·범위": [("", "미정", 0), ("개인 첫 신청 · 접수 단계", "확정", 1), ("개인 첫 신청 · 접수 단계", "확정", 0)],
+        "보고 목적": [("", "미정", 0), ("", "미정", 0), ("과장 보고 · 시범운영 여부 결정", "확정", 1)],
+        "확인 필요 사항": [("반복 질문 건수 자료 없음", "미확인", 1), ("반복 질문 건수 자료 없음", "미확인", 0), ("반복 질문 건수 자료 없음", "미확인", 0)],
+    }
+    code = {"확정": 3, "후보": 1, "미확인": 2, "미정": 0}
+    body = ""
+    for item in STATUS_ITEMS:
+        vals = rows.get(item, [("", "미정", 0)] * 3)
+        cells = ["", "", ""]
+        for k, (txt, st, new) in enumerate(vals):
+            star = '<i class="star">★</i>' if new else ""
+            cells[0] += f'<span class="v v{k}">{star}{e(txt)}</span>'
+            cells[1] += f'<span class="v v{k}"><span class="st s-{code[st]}">{e(st)}</span></span>'
+        body += f"<tr><td>{e(item)}</td><td>{cells[0]}</td><td>{cells[1]}</td></tr>"
+    steps = "".join(f'<li class="w{k}">{e(t)}</li>' for k, t in enumerate(("① 문제의식 정리 뒤", "③ 핵심 문제 정리 뒤", "④ 보고 목적 정리 뒤")))
+    html = (f'<div class="i-split wide"><div class="tw"><table class="stt live"><thead><tr><th>항목</th><th>내용 요약</th><th>상태</th></tr></thead><tbody>{body}</tbody></table></div>'
+            f'<div class="col"><ol class="stw">{steps}</ol>'
+            + card("왜 현황표인가", "한 채팅에서 이어 가므로, 지금까지 무엇이 확정됐는지 매번 눈으로 확인", "★ = 이번 답변에서 바뀐 칸", "확정은 내가 말한 것만", dark=True)
+            + '</div></div><p class="muted">가상 예시 · 실제 표에는 ‘근거·출처’ 열도 함께 나옵니다.</p>')
+    return Sec(0, "한 채팅에서 이어지는 보고서 준비 현황표", "공통 규칙 · 필수", html, role="i", steps=2, step=("규칙",))
 
 
 def example_sec():
-    rows = [("1", "분류", "‘원인에 대한 해석’으로 분류", "멈춤"),
+    rows = [("1", "정리", "‘원인에 대한 해석’으로 분류 + 문제 후보 3가지", "멈춤 · 내가 고름"),
             ("2", "질문", "“그렇게 판단한 사례나 자료가 있습니까?”", "멈춤 · 내 답 기다림"),
             ("3", "정리", "내가 고른 문제만 한 문장으로", "멈춤")]
     r = "".join(f'<div class="pexr" style="--i:{i}"><span class="pkn">{a}</span><b>{e(b)}</b><div class="pexo">{mini(robot)}<span>{e(c)}</span></div>'
                 f'<span class="pstop">{e(d)}</span></div>' for i, (a, b, c, d) in enumerate(rows))
     body = (f'<div class="pex"><div class="pexin">{mini(person)}<span>내 입력: “안내문이 어려워서 민원인이 반복 질문하는 것 같다”</span></div>{r}</div>'
-            '<p class="pnote">①에서 해결방안을 내놓지 않고, ②에서 문제 정의까지 쓰지 않는 것이 핵심입니다.</p>')
+            '<p class="pnote">AI는 후보만 내고, 문제를 고르고 확정하는 것은 내가 합니다. ②에서 문제 정의까지 쓰게 하지 않습니다.</p>')
     return Sec(0, "예시: 한 작업씩 멈추는 모습", f'{STAGE["1"]} · 필수', body, step=("1",))
 
 
@@ -527,7 +567,10 @@ CSS = """
 .pnote{font-size:14.5px;color:var(--mid)}.pnote b{color:var(--ink)}
 .rgroups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.rgroups li{border-left:5px solid var(--g);background:#fff;border-radius:8px;padding:8px 12px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
 .rgroups b{font-size:14.5px}.rgroups span{margin-left:8px;color:var(--g);font-weight:700;font-size:13px}.rgroups small{display:block;color:var(--mid);font-size:13px}
-.g1{--g:#0866d6}.g2{--g:#26262a}.g3{--g:#f26a10}.g4{--g:#12a37a}
+.g1{--g:#0866d6}.g2{--g:#26262a}.g3{--g:#f26a10}.g4{--g:#12a37a}.g5{--g:#7b5cd6}
+.stt td,.stt th{font-size:14px}.stt td:first-child{font-weight:600;white-space:nowrap}
+.st{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.st.s-0{background:#f2f3f5;color:var(--soft)}.st.s-1{background:#fff3c4;color:#8a6a00}.st.s-2{background:#fdeee3;color:#b44a05}.st.s-3{background:#e6f0fc;color:var(--blue)}
 .pproc{display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,.8fr) 26px minmax(0,1fr);align-items:stretch;gap:8px}
 .pcol{display:flex;flex-direction:column;gap:8px}.pcb{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px}.plab{font-size:13.5px;font-weight:700;color:var(--blue);min-height:1.5em}
 .pproc3{display:flex;flex-direction:column;gap:8px}.prow{display:grid;gap:8px}.prow.n5{grid-template-columns:repeat(5,minmax(0,1fr))}.prow.n4{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -560,14 +603,20 @@ DECK_CSS = """
 .active .pst{animation:rise .45s ease both;animation-delay:calc(var(--i)*.22s)}.active .pnums span{animation:pop .35s ease both;animation-delay:calc(.25s + var(--i)*.22s + var(--j)*.05s)}
 .slide .pnote{font-size:17px}
 .rhead{font-size:17px;color:var(--mid)}.rules{display:grid;gap:7px}
-.rules li{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-left:6px solid var(--g);border-radius:8px;padding:7px 12px;font-size:17.5px}
+.rules li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-left:6px solid var(--g);border-radius:8px;padding:7px 12px;font-size:17.5px}
 .rn{width:28px;height:28px;border-radius:50%;background:var(--g);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:700}
-.rules em{font-style:normal;font-size:13.5px;font-weight:600;color:var(--g)}.active .rules li{animation:slidein .35s ease both;animation-delay:calc(.15s + var(--i)*.12s)}
+.rules b{color:var(--g);font-weight:700}.active .rules li{animation:slidein .35s ease both;animation-delay:calc(.15s + var(--i)*.12s)}
 .slide .rgroups{grid-template-columns:1fr}.slide .rgroups b{font-size:16.5px}.slide .rgroups small{font-size:14.5px}
 .slide .pk{padding:14px 16px}.slide .pk b{font-size:18.5px}.slide .pk small{font-size:15px}.slide .plab{font-size:16px}.slide .puser{font-size:18px;padding:14px 16px}
 .active .pk{animation:rise .4s ease both;animation-delay:calc(.1s + var(--i)*.15s)}.active .puser{animation:pop .45s ease both .9s}
 .slide .pproc{grid-template-columns:minmax(0,1fr) 34px minmax(0,.85fr) 34px minmax(0,1fr)}.slide .pline{grid-template-columns:auto 34px auto 34px auto;justify-content:center}
 .slide .tnote{font-size:17px}
+.slide .stt td,.slide .stt th{font-size:16px;padding:8px 12px;height:auto}.slide .st{font-size:14px}
+.stt.live .v{display:none}.stt.live .v0{display:inline}.slide[data-step="1"] .stt.live .v0,.slide[data-step="2"] .stt.live .v0{display:none}
+.slide[data-step="1"] .stt.live .v1{display:inline}.slide[data-step="2"] .stt.live .v2{display:inline}
+.stt .star{font-style:normal;color:#e8582a;margin-right:6px}.active .stt .star{animation:pop .5s ease both .2s}
+.stw{display:grid;gap:8px}.stw li{border:2px solid var(--line);border-radius:10px;padding:10px 14px;font-size:17px;font-weight:600;color:var(--soft);transition:all .3s}
+.slide:not([data-step]) .stw .w0,.slide[data-step="0"] .stw .w0,.slide[data-step="1"] .stw .w1,.slide[data-step="2"] .stw .w2{border-color:var(--blue);color:var(--blue);background:#f3f8fe}
 .slide .prompt.two pre{column-count:2;column-gap:30px}
 .slide .prompt .pp{display:block;break-inside:avoid}.slide .prompt .pp+.pp{margin-top:1.6em}
 .stopc{display:flex;flex-direction:column;gap:14px}.stopsign{width:76px;height:76px}.active .stopsign{animation:pop .5s ease both .5s}
