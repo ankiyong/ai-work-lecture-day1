@@ -10,6 +10,7 @@ import content_a as A
 import content_b as B
 import content_c as X
 import content_v2 as V
+import content_info as I
 import lib
 from lib import e
 
@@ -29,14 +30,15 @@ def modules():
 
 
 class Ver:
-    """dir: docs 아래 폴더, store: 입력 저장 이름, label: 제목 뒤 표시."""
-    def __init__(self, dir, intro, mods, breaks, store="eid-d1:", label="", steps=None, css="", deck_css=""):
+    """dir: docs 아래 폴더, store: 입력 저장 이름, label: 제목 뒤 표시, extra: 모듈 번호 → 그 모듈 뒤에 장을 더하는 함수(강사 슬라이드만)."""
+    def __init__(self, dir, intro, mods, breaks, store="eid-d1:", label="", steps=None, css="", deck_css="", extra=None):
         self.dir, self.intro, self.mods, self.breaks = dir, intro, mods, breaks
         self.store, self.label, self.steps, self.css, self.deck_css = store, label, steps, css, deck_css
+        self.extra = extra or {}
 
 
 V1 = Ver("", A.intro_secs, modules, BREAKS)
-V2 = Ver("v2", V.intro_secs, V.modules, V.BREAKS, "eid-d1v2:", " · 개정안", V.STEPS, V.CSS, V.DECK_CSS)
+V2 = Ver("v2", V.intro_secs, V.modules, V.BREAKS, "eid-d1v2:", " · 개정안", V.STEPS, V.CSS, V.DECK_CSS + I.CSS, {"05": I.add})
 
 
 # ── 수강생 페이지 ──────────────────────────────
@@ -139,6 +141,8 @@ def deck_page(v=V1):
         d.dark(f'<div class="num anim">{m.num}</div><h2 class="anim anim2">{e(m.title)}</h2><p class="subt anim anim3">결과물: {e(m.result)}</p>', f"{m.num} {m.title}")
         for s in m.secs:
             add_sec(d, s)
+        if m.num in v.extra:
+            v.extra[m.num](d)
     slides, n = d.render()
     base = "\n".join(l for l in (CSS + v.css).splitlines() if not l.startswith("@media"))
     return f"""<!doctype html>
