@@ -5,7 +5,13 @@ from motion import *
 import config as C
 
 
+FORMS = ()  # (버튼 이름, "assets/..." 경로, 받을 파일명). 비어 있으면 C.FORM_URL 하나를 쓴다
+
+
 def form_link():
+    if FORMS:
+        pre = "../" if is_i() else ""
+        return " ".join(f'<a class="btn link" href="{e(pre + u)}" download="{e(n)}">{e(l)}</a>' for l, u, n in FORMS)
     if not C.FORM_URL:
         return '<span class="todo">양식 파일은 강사가 배부합니다</span>'
     url = C.FORM_URL if not is_i() else "../" + C.FORM_URL

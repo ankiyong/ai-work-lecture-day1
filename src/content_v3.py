@@ -3,6 +3,7 @@
 강사: 개정안 01·02 → 신규 실습(프로세스 ~ 2-①) → 04 → 신규 2-②·3·초안 → 개정안 07·08 → 쉬어가기 → 09·10."""
 import content_a as A
 import content_b as B
+import content_c as X
 import content_info as I
 import content_p as P
 import content_v2 as V
@@ -14,6 +15,8 @@ BREAKS = {"09": V.BREAKS["09"]}
 CSS = V.CSS + P.CSS
 JS = P.JS
 KICK01 = "01-3 · 앞으로 달라질 업무"
+FORMS = (("양식1 내려받기 · HWPX", "assets/forms/form1.hwpx", "기획예산처_업무보고서_양식.hwpx"),
+         ("양식2 내려받기 · HWP", "assets/forms/form2.hwp", "기획예산처_업무보고서_양식.hwp"))
 
 
 # ── 01 모듈: 에이전트 실제 사례 추가, 기획예산처 한정 장 정리 ─────────
@@ -81,8 +84,12 @@ EXTRA = {}  # 모듈 번호 → 그 모듈 뒤에 장을 더하는 함수. 번�
 
 def modules():
     """페이지마다 01부터 연번. 쉬어가기는 보고서 작성·최종 검토 뒤, 휴식은 Gemini Notebook 앞에 둔다."""
-    md, write, gem = A.m02(), V.m08(), B.m09()
-    tail = [V.m07(), write, gem, B.m10()]
+    X.FORMS = FORMS  # 07·08의 양식 내려받기 버튼을 양식1·양식2로
+    try:
+        md, write, gem = A.m02(), V.m08(), B.m09()
+        tail = [V.m07(), write, gem, B.m10()]
+    finally:
+        X.FORMS = ()
     if is_i():
         mods = [m01(), md, P.m0(), P.m1(), P.m21(), A.m04(), P.m22(), P.m3(), P.m_draft()] + tail
     else:
