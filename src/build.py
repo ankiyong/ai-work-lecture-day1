@@ -124,6 +124,8 @@ class Deck:
 def add_sec(d, s):
     if s.kind == "image":
         d.items.append(("image-slide", s.title, 0, f'<div class="imgonly"><img src="../assets/{s.kicker}" alt="{e(s.body)}"></div>'))
+    elif s.kind == "raw":  # 머리글 없이 본문을 그대로 쓰는 장. kicker 자리에 장 클래스
+        d.items.append((s.kicker, s.title, s.steps, s.body))
     elif s.kind == "sub":
         d.dark(f'<h2 class="anim">{e(s.title)}</h2><p class="subt anim anim2">{e(s.kicker)}</p>', s.title, "sub")
     else:

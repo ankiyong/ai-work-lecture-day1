@@ -3,6 +3,7 @@
 강사: 개정안 01·02 → 신규 실습(프로세스 ~ 2-①) → 04 → 신규 2-②·3·초안 → 개정안 07·08 → 쉬어가기 → 09·10."""
 import content_a as A
 import content_b as B
+import content_deck as D
 import content_c as X
 import content_info as I
 import content_p as P
@@ -12,7 +13,7 @@ from motion import stack
 
 STEPS = ("보고서 흐름", ["규칙", "1", "2-①", "2-②", "3", "초안", "작성", "검토"])
 BREAKS = {"09": V.BREAKS["09"]}
-CSS = V.CSS + P.CSS
+CSS = V.CSS + P.CSS + D.CSS
 JS = P.JS
 KICK01 = "01-3 · 앞으로 달라질 업무"
 FORMS = (("양식1 내려받기 · HWPX", "assets/forms/form1.hwpx", "기획예산처_업무보고서_양식.hwpx"),
@@ -102,7 +103,7 @@ def m08():
     return m
 
 
-DECK_CSS = V.DECK_CSS + I.CSS + P.DECK_CSS + """
+DECK_CSS = V.DECK_CSS + I.CSS + P.DECK_CSS + D.DECK_CSS + """
 .agshot{width:960px;height:540px;margin:0 auto;position:relative;overflow:hidden;border-radius:12px;background:#111;box-shadow:0 6px 24px rgba(0,0,0,.18)}
 .agz{position:absolute;inset:0;transform-origin:100% 23.2%;transition:transform .9s cubic-bezier(.2,.8,.2,1)}.agz img{width:100%;height:100%;display:block;border-radius:0}
 .agf{position:absolute;left:80.6%;top:11.2%;width:19%;height:53%;border:4px solid var(--orange);border-radius:10px;transition:opacity .4s}
@@ -116,7 +117,7 @@ DECK_CSS = V.DECK_CSS + I.CSS + P.DECK_CSS + """
 def intro_secs():
     if not is_i():
         return P.intro_secs()
-    secs = V.intro_secs()
+    secs = [D.intro_slide()] + V.intro_secs()  # 표지 다음에 강사소개
     for s in secs:  # 개정안 단계 이름(2①)을 v3 지도 이름(2-①)으로, 작성 스킬은 hwpx-writer로
         if s.step:
             s.step = [str(x).replace("2①", "2-①").replace("2②", "2-②") for x in s.step]
@@ -149,7 +150,7 @@ def modules():
     X.FORMS = FORMS  # 07·08의 양식 내려받기 버튼을 양식1·양식2로
     try:
         md, write, gem = A.m02(), m08(), B.m09()
-        tail = [m07(), write, gem, B.m10()]
+        tail = [m07(), write, gem, B.m10(), D.m_deck()]
     finally:
         X.FORMS = ()
     if is_i():
