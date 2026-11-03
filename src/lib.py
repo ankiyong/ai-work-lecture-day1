@@ -90,8 +90,21 @@ def bars(title, rows, cap=None):
     return f'<div class="bars"><h5>{e(title)}</h5>{b}{c}</div>'
 
 
+STEPS = None  # 개정안: (지도 이름, 단계 이름들). None이면 9단계 지도
+
+
+def set_steps(s):
+    global STEPS
+    STEPS = s
+
+
 def stepmap(*active):
-    d = "".join(f'<span class="{"on" if i in active else ""}">{i}</span>' for i in range(1, 10))
+    if STEPS:
+        name, keys = STEPS
+        on = {str(a) for a in active}
+        d = "".join(f'<span class="{"on" if k in on else ""}">{e(k)}</span>' for k in keys)
+        return f'<div class="stepmap v2" aria-label="{e(name)}, {e(", ".join(map(str, active)))} 진행 중"><small>{e(name)}</small>{d}</div>'
+    d ="".join(f'<span class="{"on" if i in active else ""}">{i}</span>' for i in range(1, 10))
     return f'<div class="stepmap" aria-label="9단계 지도, {", ".join(map(str, active))}단계 진행 중"><small>9단계 지도</small>{d}</div>'
 
 

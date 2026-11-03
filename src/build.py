@@ -1,4 +1,5 @@
-"""python src/build.py → docs/index.html(수강생), docs/instructor/index.html(강사 슬라이드쇼) 생성."""
+"""python src/build.py → docs/index.html(수강생), docs/instructor/index.html(강사 슬라이드쇼) 생성.
+개정안(보고서 흐름: 기획 3단계 → 작성 5단계 → 최종 검토)은 docs/v2/에 따로 만든다."""
 import pathlib
 import re
 import sys
@@ -8,6 +9,7 @@ import config as C
 import content_a as A
 import content_b as B
 import content_c as X
+import content_v2 as V
 import lib
 from lib import e
 
@@ -26,6 +28,17 @@ def modules():
     return [A.m01(), A.m02(), X.m03(), A.m04(), X.m05(), X.m06(), B.m07(), X.m08(), B.m09(), B.m10()]
 
 
+class Ver:
+    """dir: docs 아래 폴더, store: 입력 저장 이름, label: 제목 뒤 표시."""
+    def __init__(self, dir, intro, mods, breaks, store="eid-d1:", label="", steps=None, css="", deck_css=""):
+        self.dir, self.intro, self.mods, self.breaks = dir, intro, mods, breaks
+        self.store, self.label, self.steps, self.css, self.deck_css = store, label, steps, css, deck_css
+
+
+V1 = Ver("", A.intro_secs, modules, BREAKS)
+V2 = Ver("v2", V.intro_secs, V.modules, V.BREAKS, "eid-d1v2:", " · 개정안", V.STEPS, V.CSS, V.DECK_CSS)
+
+
 # ── 수강생 페이지 ──────────────────────────────
 def student_sec(s, sid):
     if s.role == "i":
@@ -37,19 +50,20 @@ def student_sec(s, sid):
     return f'<section class="sec" id="{sid}"><header>{top}<h3>{e(s.title)}</h3></header>{s.body}</section>', (sid, s.title)
 
 
-def student_page():
+def student_page(v=V1):
     lib.set_role("student")
+    lib.set_steps(v.steps)
     body, nav = "", ""
     intro = ('<section class="sec" id="howto"><header><div class="kick"><span>시작 전에</span></div><h3>이 페이지 사용법</h3></header>'
              + lib.cards(lib.card("입력은 이 브라우저에만 저장", "자동 저장되며 서버로 보내지 않습니다", "공용 PC라면 마친 뒤 입력 지우기를 누르세요"),
                          lib.card("복사해서 이어 가기", "표마다 있는 마크다운 복사로 다음 단계 프롬프트에 붙여 넣습니다", "예시 프롬프트는 내 것을 쓴 뒤에 열어 봅니다"),
                          lib.card("민감정보 입력 금지", "내부 정보와 개인정보는 이 페이지와 외부 AI에 입력하지 않습니다"))
              + "</section>")
-    for n, s in enumerate(A.intro_secs()):
+    for n, s in enumerate(v.intro()):
         intro += student_sec(s, f"intro-{n}")[0]
     body += f'<div class="mod" id="start">{intro}</div>'
     nav += '<a href="#start" class="nm"><b>0</b>시작하기</a>'
-    for m in modules():
+    for m in v.mods():
         rendered, sub = "", ""
         for k, s in enumerate(m.secs):
             h, item = student_sec(s, f"m{m.num}-{k}")
@@ -63,18 +77,19 @@ def student_page():
             meta += f"<span>도구: {e(m.tool)}</span>"
         body += f'<div class="mod" id="m{m.num}"><div class="hero"><b>{m.num}</b><h2>{e(m.title)}</h2><p>{e(m.intro)}</p><div class="meta">{meta}</div></div>{rendered}</div>'
         nav += f'<details class="ng"><summary><a href="#m{m.num}" class="nm"><b>{m.num}</b>{e(m.title)}</a></summary><div>{sub}</div></details>'
+    js = JS.replace('"eid-d1:"', f'"{v.store}"')
     return f"""<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI와 함께하는 업무 · 실습 안내</title>{ROBOTS}{FONT}
-<style>{CSS}</style></head>
+<title>AI와 함께하는 업무 · 실습 안내{v.label}</title>{ROBOTS}{FONT}
+<style>{CSS}{v.css}</style></head>
 <body class="student">
 <header class="top"><button type="button" class="btn menu" id="menu" aria-expanded="false" aria-controls="nav">목차</button>
-<div class="brand"><small>기획예산처 AI 활용 특강 · 1일차 · EID Consulting</small><strong>AI와 함께하는 업무</strong></div>
+<div class="brand"><small>기획예산처 AI 활용 특강 · 1일차 · EID Consulting{v.label}</small><strong>AI와 함께하는 업무</strong></div>
 <span class="role">실습 안내</span><div class="tools"><button type="button" class="btn" id="exportMd">내 결과 내려받기</button><button type="button" class="btn" id="clearAll">입력 지우기</button></div></header>
 <div class="layout"><nav id="nav" aria-label="목차">{nav}</nav>
 <main><div class="cover"><p>문제 찾기부터 정책보고서·인포그래픽까지</p><div><span>조사</span><span>기획</span><span>작성</span><span>시각화</span></div></div>{body}</main></div>
 <div id="toast" role="status" aria-live="polite"></div>
-<script>{JS}</script></body></html>
+<script>{js}</script></body></html>
 """
 
 
@@ -110,26 +125,27 @@ def add_sec(d, s):
         d.content(s)
 
 
-def deck_page():
+def deck_page(v=V1):
     lib.set_role("instructor")
+    lib.set_steps(v.steps)
     d = Deck()
-    d.dark('<div class="cv"><p class="cover-tag anim">기획예산처 AI 활용 특강</p><p class="main anim anim2">AI와 함께하는 업무</p>'
+    d.dark(f'<div class="cv"><p class="cover-tag anim">기획예산처 AI 활용 특강{v.label}</p><p class="main anim anim2">AI와 함께하는 업무</p>'
            '<p class="subt anim anim2">문제 찾기부터 정책보고서·인포그래픽까지</p><div class="row anim anim3"><span><i></i>조사</span><span><i></i>기획</span><span><i></i>작성</span><span><i></i>시각화</span></div></div>', "AI와 함께하는 업무")
-    for s in A.intro_secs():
+    for s in v.intro():
         add_sec(d, s)
-    for m in modules():
-        if m.num in BREAKS:
-            d.dark(f'<div class="cup anim" aria-hidden="true">☕</div><h2 class="anim anim2">휴식</h2><p class="subt anim anim3">{e(BREAKS[m.num])}</p>', "휴식", "sub")
+    for m in v.mods():
+        if m.num in v.breaks:
+            d.dark(f'<div class="cup anim" aria-hidden="true">☕</div><h2 class="anim anim2">휴식</h2><p class="subt anim anim3">{e(v.breaks[m.num])}</p>', "휴식", "sub")
         d.dark(f'<div class="num anim">{m.num}</div><h2 class="anim anim2">{e(m.title)}</h2><p class="subt anim anim3">결과물: {e(m.result)}</p>', f"{m.num} {m.title}")
         for s in m.secs:
             add_sec(d, s)
     slides, n = d.render()
-    base = "\n".join(l for l in CSS.splitlines() if not l.startswith("@media"))
+    base = "\n".join(l for l in (CSS + v.css).splitlines() if not l.startswith("@media"))
     return f"""<!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI와 함께하는 업무 · 강의 슬라이드</title>{ROBOTS}{FONT}
+<title>AI와 함께하는 업무 · 강의 슬라이드{v.label}</title>{ROBOTS}{FONT}
 <style>{base}
-{DECK_CSS}</style></head>
+{DECK_CSS}{v.deck_css}</style></head>
 <body class="deckbody">
 <div id="viewport"><div id="stage">{slides}</div></div>
 <div id="bar"><button type="button" id="bprev" aria-label="이전">◀ 이전</button><button type="button" id="bnext" aria-label="다음">다음 ▶</button>
@@ -141,9 +157,16 @@ def deck_page():
 
 def main():
     out = ROOT / "docs"
-    (out / "instructor").mkdir(parents=True, exist_ok=True)
-    (out / "index.html").write_text(student_page(), encoding="utf-8")
-    (out / "instructor/index.html").write_text(deck_page(), encoding="utf-8")
+    for v in (V1, V2):
+        d = out / v.dir if v.dir else out
+        (d / "instructor").mkdir(parents=True, exist_ok=True)
+        s, i = student_page(v), deck_page(v)
+        if v.dir:  # 한 단계 아래 폴더: 공용 assets 경로를 맞춘다
+            s = s.replace('="assets/', '="../assets/')
+            i = i.replace('="../assets/', '="../../assets/')
+        (d / "index.html").write_text(s, encoding="utf-8")
+        (d / "instructor/index.html").write_text(i, encoding="utf-8")
+    lib.set_steps(None)
     (out / "robots.txt").write_text("User-agent: *\nDisallow: /\n", encoding="utf-8")
     (out / ".nojekyll").write_text("", encoding="utf-8")
     print("built", out)
