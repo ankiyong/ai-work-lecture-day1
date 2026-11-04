@@ -32,16 +32,16 @@ def modules():
 
 class Ver:
     """dir: docs 아래 폴더, store: 입력 저장 이름, label: 제목 뒤 표시, extra: 모듈 번호 → 그 모듈 뒤에 장을 더하는 함수(강사 슬라이드만),
-    js: 수강생 페이지에 덧붙이는 스크립트."""
-    def __init__(self, dir, intro, mods, breaks, store="eid-d1:", label="", steps=None, css="", deck_css="", extra=None, js=""):
+    js·deck_js: 수강생 페이지·강사 슬라이드에 덧붙이는 스크립트."""
+    def __init__(self, dir, intro, mods, breaks, store="eid-d1:", label="", steps=None, css="", deck_css="", extra=None, js="", deck_js=""):
         self.dir, self.intro, self.mods, self.breaks = dir, intro, mods, breaks
         self.store, self.label, self.steps, self.css, self.deck_css = store, label, steps, css, deck_css
-        self.extra, self.js = {} if extra is None else extra, js
+        self.extra, self.js, self.deck_js = {} if extra is None else extra, js, deck_js
 
 
 V1 = Ver("", A.intro_secs, modules, BREAKS)
 V2 = Ver("v2", V.intro_secs, V.modules, V.BREAKS, "eid-d1v2:", " · 개정안", V.STEPS, V.CSS, V.DECK_CSS + I.CSS, {"05": I.add})
-V3 = Ver("v3", W.intro_secs, W.modules, W.BREAKS, "eid-d1v3:", " · 실습 개정안", W.STEPS, W.CSS, W.DECK_CSS, W.EXTRA, W.JS)
+V3 = Ver("v3", W.intro_secs, W.modules, W.BREAKS, "eid-d1v3:", " · 실습 개정안", W.STEPS, W.CSS, W.DECK_CSS, W.EXTRA, W.JS, W.DECK_JS)
 
 
 # ── 수강생 페이지 ──────────────────────────────
@@ -160,7 +160,7 @@ def deck_page(v=V1):
 <div id="bar"><button type="button" id="bprev" aria-label="이전">◀ 이전</button><button type="button" id="bnext" aria-label="다음">다음 ▶</button>
 <span class="count" id="count" aria-live="polite">1 / {n}</span><div id="prog"><i id="progi"></i></div><span class="ttl" id="ttl"></span>
 <button type="button" id="bover" title="O 키">전체 보기</button><button type="button" id="bfull" title="F 키">전체 화면</button></div>
-<script>{DECK_JS}</script></body></html>
+<script>{DECK_JS}{v.deck_js}</script></body></html>
 """
 
 

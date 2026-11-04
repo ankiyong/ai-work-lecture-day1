@@ -18,6 +18,22 @@ STEPS = ("보고서 흐름", ["규칙", "1", "2-①", "2-②", "3", "초안", "�
 BREAKS = {"09": V.BREAKS["09"]}
 CSS = V.CSS + P.CSS + D.CSS
 JS = P.JS
+DECK_JS = r"""
+(function () {
+  /* 영상 장: 장에 오면 처음부터 재생, 떠나면 멈춤, 끝나면 다음 장. 영상 위 클릭은 장 넘김으로 보내지 않는다 */
+  [].forEach.call(document.querySelectorAll(".slide video[data-auto]"), function (v) {
+    var sl = v.closest(".slide");
+    ["click", "contextmenu", "touchstart", "touchend"].forEach(function (t) { v.addEventListener(t, function (e) { e.stopPropagation(); }); });
+    new MutationObserver(function () {
+      if (sl.classList.contains("active")) { v.currentTime = 0; var p = v.play(); if (p && p.catch) p.catch(function () {}); }
+      else v.pause();
+    }).observe(sl, { attributes: true, attributeFilter: ["class"] });
+    v.addEventListener("ended", function () {
+      if (sl.classList.contains("active")) document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight" }));
+    });
+  });
+})();
+"""
 KICK01 = "01-3 · 앞으로 달라질 업무"
 FORMS = (("양식1 내려받기 · HWPX", "assets/forms/form1.hwpx", "기획예산처_업무보고서_양식.hwpx"),
          ("양식2 내려받기 · HWP", "assets/forms/form2.hwp", "기획예산처_업무보고서_양식.hwp"))
@@ -42,6 +58,43 @@ def brity():
                + source("출처: 삼성SDS 보도 「브리티웍스, 중앙부처 9곳 도입…정부 AI 행정혁신 가속」(2026.8.13)"), role="i")
 
 
+def lean_ai():
+    """생산 수단의 혁신: 리더보드 소개 화면 → 다음 클릭에 표로 바꾸고 1위 행을 강조한다."""
+    body = ('<div class="lbshot"><img class="lb1" src="../assets/lean-ai-1.png" alt="Lean AI Native Companies Leaderboard 소개 화면: 1인 10억 달러 기업을 향한 흐름, 70개 기업 추적">'
+            '<div class="lb2"><img src="../assets/lean-ai-2.png" alt="리더보드 표: 1위 Medvi, AI 원격진료, 직원 1명, 연매출 18억 달러">'
+            '<span class="lbhi" aria-hidden="true"></span></div></div>')
+    return Sec(0, "생성형 AI는 삶의 질 도구가 아니라 생산 수단의 혁신", KICK01, body + source("출처: LeanAILeaderboard.com (데이터 기준 2026년 10월)"),
+               role="i", steps=1)
+
+
+def vibe_coding():
+    k = "01-4 · 우리는 어떻게 활용할 것인가?"
+    return [
+        Sec(0, "바이브코딩: 말로 설명하면 AI가 만들어 주는 시대", k,
+            flow(("말로 설명", "무엇이 필요한지", "업무 언어 그대로"), ("AI가 코드 작성", "프로그램·자동화", "화면까지"),
+                 ("실행해 보기", "결과를 직접 확인"), ("말로 고치기", "‘이 부분 바꿔 줘’", "될 때까지 반복"))
+            + cards(card("업무에서", "반복되는 문서 정리·변환", "집계표·보고 양식 자동 채우기", "부서에 맞춘 작은 도구"),
+                    card("일상에서", "가계부·일정 알림", "모임 안내 페이지", "나만 쓰는 계산기"),
+                    card("누가 만드나", "코딩을 몰라도", "‘무엇이 필요한지’ 아는 사람이 만든다", dark=True))
+            + source("바이브코딩(vibe coding): 2025년 2월 안드레이 카파시(Andrej Karpathy)가 처음 쓴 말"), role="i"),
+        Sec(0, "사례: 공무원이 직접 만든 업무 도구 ‘범피스’", k,
+            '<figure class="bpshot"><img src="../assets/bumpis.webp" alt="범정부오피스 1100일차 매뉴얼 표지, 범정부 오피스 소개, 개발자 인터뷰 기사"></figure>'
+            + cards(card("범정부 오피스 (범피스)", "행정안전부에서 만든 문서 자동화 도구"),
+                    card("무엇을 줄였나", "현장에서 반복되는 문서 편집 작업을 간소화"),
+                    card("조직에 남긴 것", "공무원이 창의적이고 본질적인 행정업무에 집중하도록 지원", dark=True))
+            + source("출처: 행정안전부 「범정부오피스 1100일차 매뉴얼」(2025.11) · 기사 「야근에 지친 공무원, ‘딸깍’으로 일터를 바꾸다」(2025.10.10, 이경수 행정안전부 행정제도과 주무관 인터뷰)"),
+            role="i"),
+    ]
+
+
+def robot_video():
+    """현장 로봇 장 앞의 영상. 장에 오면 처음부터 재생하고, 끝나면 다음 장으로 넘어간다 (DECK_JS)."""
+    body = ('<div class="vplay"><div><small>01-2 · 이미 생긴 변화들</small><h2>“인간 VS 로봇”<br>10시간 택배 작업 대결</h2></div>'
+            '<video data-auto src="../assets/video/robot-vs-human.mp4" controls playsinline preload="auto"></video>'
+            '<p>영상이 끝나면 다음 장으로 넘어갑니다</p></div>')
+    return Sec(0, "영상: 인간 VS 로봇 택배 작업 대결", "video-slide", body, role="i", kind="raw")
+
+
 def m01():
     m, secs = A.m01(), []
     for s in m.secs:
@@ -49,10 +102,12 @@ def m01():
             continue
         if s.title.startswith("기획예산처는 AI 업무환경 선도 부처 ②"):
             s = brity()
+        if s.title.startswith("현장도 바뀐다"):
+            secs.append(robot_video())
         secs.append(s)
         if s.title == "어시스턴트와 에이전트의 경계":
-            secs.append(agent_case())
-    m.secs = secs
+            secs += [agent_case(), lean_ai()]
+    m.secs = secs + vibe_coding()  # 01 끝, 02 마크다운 앞: 바이브코딩과 범피스 사례
     return m
 
 
@@ -146,6 +201,19 @@ def m08():
 
 
 DECK_CSS = V.DECK_CSS + I.CSS + P.DECK_CSS + D.DECK_CSS + """
+.slide.video-slide{background:#111;padding:0}
+.lbshot{width:960px;height:540px;margin:0 auto;position:relative;overflow:hidden;border-radius:12px;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.lbshot img{display:block;width:100%;height:auto;border-radius:0}
+.lb1{position:absolute;inset:0;transition:opacity .5s,transform .6s}
+.lb2{position:absolute;left:0;right:0;top:50%;transform:translateY(-46%);opacity:0;transition:opacity .5s .15s,transform .6s .15s}
+.lbhi{position:absolute;left:.4%;width:99.2%;top:15.6%;height:7.4%;border:4px solid #e8582a;border-radius:8px;box-shadow:0 0 0 9999px rgba(20,20,24,.38);opacity:0;transform:scale(1.08);transition:opacity .4s .8s,transform .4s .8s}
+.slide[data-step="1"] .lb1{opacity:0;transform:scale(.97)}.slide[data-step="1"] .lb2{opacity:1;transform:translateY(-50%)}
+.slide[data-step="1"] .lbhi{opacity:1;transform:none}
+.bpshot{margin:0;text-align:center}.bpshot img{max-height:330px;width:auto;max-width:100%;border-radius:10px;border:1px solid var(--line)}
+.vplay{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:44px;padding:40px 52px}
+.vplay video{height:640px;width:auto;border-radius:12px;background:#000;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.vplay h2{color:#fff;font-size:36px;line-height:1.35;font-weight:700;text-align:right}.vplay small{display:block;text-align:right;color:var(--sky);font-size:17px;margin-bottom:10px}
+.vplay p{color:#a9abb3;font-size:16px}
 .agshot{width:960px;height:540px;margin:0 auto;position:relative;overflow:hidden;border-radius:12px;background:#111;box-shadow:0 6px 24px rgba(0,0,0,.18)}
 .agz{position:absolute;inset:0;transform-origin:100% 23.2%;transition:transform .9s cubic-bezier(.2,.8,.2,1)}.agz img{width:100%;height:100%;display:block;border-radius:0}
 .agf{position:absolute;left:80.6%;top:11.2%;width:19%;height:53%;border:4px solid var(--orange);border-radius:10px;transition:opacity .4s}
