@@ -403,7 +403,7 @@ def m0():
                 + card("한 번만 입력", "대화를 시작할 때 맨 처음 입력", "같은 대화창에서 ① 작업부터 이어 갑니다", "새 대화를 열면 다시 입력", dark=True)
                 + f'<div class="card"><h4>다섯 묶음</h4><ul class="rgroups">{groups}</ul></div></div></div>')
     else:
-        blank = "".join(f"<tr><td>{e(x)}</td><td></td><td><span class=\"st s-0\">미정</span></td><td></td></tr>" for x in STATUS_ITEMS)
+        blank = "".join(f"<tr><td>{e(x)}</td><td></td><td><span class=\"stx s-0\">미정</span></td><td></td></tr>" for x in STATUS_ITEMS)
         body = (prompt("공통 규칙 · 대화 시작 때 한 번", RULES, example=False)
                 + f'<ul class="rgroups">{groups}</ul>'
                 + '<h5 class="lab">답변 끝마다 이어지는 보고서 준비 현황표 (처음 모습)</h5>'
@@ -434,7 +434,7 @@ def status_sec():
         for k, (txt, st, new) in enumerate(vals):
             star = '<i class="star">★</i>' if new else ""
             cells[0] += f'<span class="v v{k}">{star}{e(txt)}</span>'
-            cells[1] += f'<span class="v v{k}"><span class="st s-{code[st]}">{e(st)}</span></span>'
+            cells[1] += f'<span class="v v{k}"><span class="stx s-{code[st]}">{e(st)}</span></span>'
         body += f"<tr><td>{e(item)}</td><td>{cells[0]}</td><td>{cells[1]}</td></tr>"
     steps = "".join(f'<li class="w{k}">{e(t)}</li>' for k, t in enumerate(("① 문제의식 정리 뒤", "③ 핵심 문제 정리 뒤", "④ 보고 목적 정리 뒤")))
     html = (f'<div class="i-split wide"><div class="tw"><table class="stt live"><thead><tr><th>항목</th><th>내용 요약</th><th>상태</th></tr></thead><tbody>{body}</tbody></table></div>'
@@ -573,8 +573,8 @@ CSS = """
 .rgroups b{font-size:14.5px}.rgroups span{margin-left:8px;color:var(--g);font-weight:700;font-size:13px}.rgroups small{display:block;color:var(--mid);font-size:13px}
 .g1{--g:#0866d6}.g2{--g:#26262a}.g3{--g:#f26a10}.g4{--g:#12a37a}.g5{--g:#7b5cd6}
 .stt td,.stt th{font-size:14px}.stt td:first-child{font-weight:600;white-space:nowrap}
-.st{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
-.st.s-0{background:#f2f3f5;color:var(--soft)}.st.s-1{background:#fff3c4;color:#8a6a00}.st.s-2{background:#fdeee3;color:#b44a05}.st.s-3{background:#e6f0fc;color:var(--blue)}
+.stx{display:inline-block;border-radius:99px;padding:1px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.stx.s-0{background:#f2f3f5;color:var(--soft)}.stx.s-1{background:#fff3c4;color:#8a6a00}.stx.s-2{background:#fdeee3;color:#b44a05}.stx.s-3{background:#e6f0fc;color:var(--blue)}
 .pproc{display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,.8fr) 26px minmax(0,1fr);align-items:stretch;gap:8px}
 .pcol{display:flex;flex-direction:column;gap:8px}.pcb{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px}.plab{font-size:13.5px;font-weight:700;color:var(--blue);min-height:1.5em}
 .pproc3{display:flex;flex-direction:column;gap:8px}.prow{display:grid;gap:8px}.prow.n5{grid-template-columns:repeat(5,minmax(0,1fr))}.prow.n4{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -615,7 +615,7 @@ DECK_CSS = """
 .active .pk{animation:rise .4s ease both;animation-delay:calc(.1s + var(--i)*.15s)}.active .puser{animation:pop .45s ease both .9s}
 .slide .pproc{grid-template-columns:minmax(0,1fr) 34px minmax(0,.85fr) 34px minmax(0,1fr)}.slide .pline{grid-template-columns:auto 34px auto 34px auto;justify-content:center}
 .slide .tnote{font-size:17px}
-.slide .stt td,.slide .stt th{font-size:16px;padding:8px 12px;height:auto}.slide .st{font-size:14px}
+.slide .stt td,.slide .stt th{font-size:16px;padding:8px 12px;height:auto}.slide .stx{font-size:14px}
 .stt.live .v{display:none}.stt.live .v0{display:inline}.slide[data-step="1"] .stt.live .v0,.slide[data-step="2"] .stt.live .v0{display:none}
 .slide[data-step="1"] .stt.live .v1{display:inline}.slide[data-step="2"] .stt.live .v2{display:inline}
 .stt .star{font-style:normal;color:#e8582a;margin-right:6px}.active .stt .star{animation:pop .5s ease both .2s}

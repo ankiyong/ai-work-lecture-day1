@@ -11,7 +11,7 @@ import content_c as X
 import content_info as I
 import content_p as P
 import content_v2 as V
-from lib import Mod, Sec, call, card, cards, flow, is_i, prompt, source
+from lib import Mod, Sec, call, card, cards, e, flow, is_i, prompt, source
 from motion import paths, stack
 
 STEPS = ("보고서 흐름", ["규칙", "1", "2-①", "2-②", "3", "초안", "작성", "검토"])
@@ -85,6 +85,18 @@ def vibe_coding():
             + source("출처: 행정안전부 「범정부오피스 1100일차 매뉴얼」(2025.11) · 기사 「야근에 지친 공무원, ‘딸깍’으로 일터를 바꾸다」(2025.10.10, 이경수 행정안전부 행정제도과 주무관 인터뷰)"),
             role="i"),
     ]
+
+
+def m04():
+    """04 도구 비교: 랭킹 사이트 장에서 한 번 더 클릭하면 랭킹 사이트 화면이 나타난다 (강사만)."""
+    m = A.m04()
+    for i, s in enumerate(m.secs):
+        if s.title == "생성형AI 랭킹 사이트":
+            html = (f'<header class="sh"><div class="kick"><span>{e(s.kicker)}</span></div><h3>{e(s.title)}</h3></header>'
+                    f'<div class="body">{s.body}</div>'
+                    '<div class="rkshot"><img src="../assets/ai-ranking.webp" alt="AI 랭킹 사이트 화면: 실제 사용자 평가로 매긴 에이전트 순위"></div>')
+            m.secs[i] = Sec(0, s.title, "rank-slide", html, role="i", steps=1, kind="raw")
+    return m
 
 
 def robot_video():
@@ -202,6 +214,9 @@ def m08():
 
 DECK_CSS = V.DECK_CSS + I.CSS + P.DECK_CSS + D.DECK_CSS + """
 .slide.video-slide{background:#111;padding:0}
+.rkshot{position:absolute;inset:14px;z-index:5;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.18);opacity:0;transform:scale(.96);transition:opacity .45s,transform .45s;pointer-events:none}
+.rkshot img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:8px}
+.slide[data-step="1"] .rkshot{opacity:1;transform:none}
 .lbshot{width:960px;height:540px;margin:0 auto;position:relative;overflow:hidden;border-radius:12px;background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.12)}
 .lbshot img{display:block;width:100%;height:auto;border-radius:0}
 .lb1{position:absolute;inset:0;transition:opacity .5s,transform .6s}
@@ -292,7 +307,7 @@ def modules():
     finally:
         X.FORMS = ()
     if is_i():
-        mods = [m01(), md, P.m0(), P.m1(), P.m21(), A.m04(), P.m22(), P.m3(), P.m_draft()] + tail
+        mods = [m01(), md, P.m0(), P.m1(), P.m21(), m04(), P.m22(), P.m3(), P.m_draft()] + tail
     else:
         mods = P.modules() + tail
         for m in mods:  # 수강생 페이지에는 '확인:'·'점검:' 장을 두지 않는다
