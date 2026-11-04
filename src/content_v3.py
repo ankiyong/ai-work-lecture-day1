@@ -281,6 +281,7 @@ def m08():
 
 DECK_CSS = V.DECK_CSS + I.CSS + P.DECK_CSS + D.DECK_CSS + """
 .slide.video-slide{background:#111;padding:0}
+.slide .flowt th,.slide .flowt td{padding:6px 12px;height:auto}
 .rkshot{position:absolute;inset:14px;z-index:5;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.18);opacity:0;transform:scale(.96);transition:opacity .45s,transform .45s;pointer-events:none}
 .rkshot img{max-width:100%;max-height:100%;width:auto;height:auto;border-radius:8px}
 .slide[data-step="1"] .rkshot{opacity:1;transform:none}
@@ -338,13 +339,27 @@ def intro_secs():
     if not is_i():
         return [md_practice()] + P.intro_secs()
     secs = [D.intro_slide()] + V.intro_secs()  # 표지 다음에 강사소개
-    secs[2] = goal_sec(secs[2])
+    secs[1], secs[2] = flow_sec(secs[1]), goal_sec(secs[2])
     for s in secs:  # 개정안 단계 이름(2①)을 v3 지도 이름(2-①)으로, 작성 스킬은 hwpx-writer로
         if s.step:
             s.step = [str(x).replace("2①", "2-①").replace("2②", "2-②") for x in s.step]
         for a, b in INTRO_SWAP:
             s.body = s.body.replace(a, b)
     return secs
+
+
+def flow_sec(old):
+    """강의 흐름: 개정안 표 대신 v3 강사 순서(01~14)와 쉬어가기·휴식 위치를 모듈 정보에서 만든다."""
+    assert old.title == "강의 흐름", old.title
+    rows = []
+    for m in modules():
+        if m.num in BREAKS:
+            rows.append(["☕", "휴식", "", ""])
+        rows.append([m.num, m.title, m.method or "실습 · " + m.intro.split(" · ")[0], m.result])
+        if EXTRA.get(m.num) is I.add:
+            rows.append(["", "쉬어가기 · AI는 답의 재료를 어디서 가져올까?", "강의", ""])
+    return Sec(old.pages, old.title, old.kicker, '<div class="flowt">' + table(["모듈", "내용", "방식", "결과물"], rows) + "</div>",
+               role=old.role, step=old.step)
 
 
 def goal_sec(old):
@@ -398,6 +413,10 @@ def modules():
             m.secs = [s for s in m.secs if not s.title.startswith(("확인:", "점검:"))]
     for k, m in enumerate(mods, 1):
         m.num = f"{k:02d}"
+        for s in m.secs:  # 가져온 장의 머리글 번호(예: 04 · 도구 비교)도 이 페이지의 모듈 번호로
+            s.kicker = re.sub(r"^\d\d(?= · )", m.num, s.kicker)
+            if s.kind == "raw":  # 머리글을 본문에 직접 넣은 장 (랭킹 사이트)
+                s.body = re.sub(r'(<div class="kick"><span>)\d\d(?= · )', lambda x: x.group(1) + m.num, s.body)
     BREAKS.clear()
     BREAKS[gem.num] = V.BREAKS["09"]
     EXTRA.clear()
