@@ -161,6 +161,8 @@ def m07():
                "기관의 빈 양식을 HWPX로 준비하고, 제공된 hwpx-writer 내용으로 Claude에 스킬을 만듭니다. 내용은 그대로 쓰며 따로 정할 것은 없습니다.", secs)
 
 
+SKILL_REPO = "https://github.com/jkf87/hwpx-skill"
+SKILL_ZIP = SKILL_REPO + "/archive/refs/tags/v1.18.0.zip"  # 스크립트·참고 자료까지 든 스킬 전체 (GitHub 원본에서 바로 받음)
 SKILL_FILE = pathlib.Path(__file__).resolve().parent.parent / "docs/assets/skills/hwpx-writer/SKILL.md"
 
 
@@ -178,15 +180,19 @@ def skill_practice(k):
         html = ('<div class="i-split wide"><div class="col">'
                 + card("만들 스킬", f"이름: {name}", f"설명: {desc}", "지침: SKILL.md 본문 그대로 (수강생 페이지에서 복사)", dark=True)
                 + card("지침(SKILL.md)에 담긴 것", *heads) + '</div><div class="col">'
-                + card("수강생이 할 일", "파일로 만들기: SKILL.md 내려받아 올리기", "직접 입력: 이름·설명·지침 붙여 넣기", "내용은 고치지 않는다")
-                + card("강사 확인", "지침이 scripts/·references/의 파일을 부른다", "그 파일까지 있어야 그대로 동작한다", "수업 PC에서 스킬이 켜지는지 미리 확인")
+                + card("수강생이 할 일", "파일로 만들기: 스킬 전체 ZIP(v1.18.0) 내려받아 그대로 올리기", "직접 입력: 이름·설명·지침 붙여 넣기", "내용은 고치지 않는다")
+                + card("강사 확인", "ZIP에는 scripts/·references/가 함께 있다 — 표·도식은 ZIP으로", "ZIP으로 올리면 스킬 이름은 ‘hwpx’", "수업 PC에서 스킬이 켜지는지 미리 확인")
                 + "</div></div>" + source(SKILL_SRC))
     else:
         html = (prompt("스킬 이름", name, example=False) + prompt("설명", desc, example=False)
                 + f'<details class="reveal"><summary>지침 전체 보기 · SKILL.md 본문 ({body.count(chr(10)) + 1}줄)</summary>'
                 + prompt("지침 (SKILL.md 본문)", body, example=False) + "</details>"
-                + '<p class="linkrow"><a class="btn link" href="assets/skills/hwpx-writer/SKILL.md" download="SKILL.md">SKILL.md 파일 내려받기</a></p>'
-                + '<p class="tip">파일로 만들 때는 SKILL.md를 내려받아 올리고, 직접 입력할 때는 이름·설명·지침을 각각 복사해 붙여 넣습니다. 내용은 고치지 않습니다.</p>')
+                + f'<p class="linkrow"><a class="btn link" href="{SKILL_ZIP}">스킬 전체 파일 ZIP 내려받기 · v1.18.0</a> '
+                + '<a class="btn link" href="assets/skills/hwpx-writer/SKILL.md" download="SKILL.md">SKILL.md 파일만 내려받기</a></p>'
+                + '<p class="tip">파일로 만들 때는 스킬 전체 파일 ZIP을 내려받아 압축을 풀지 않고 그대로 올립니다. 표·도식을 만드는 스크립트가 함께 들어 있습니다. '
+                  'ZIP으로 올린 스킬은 목록에 ‘hwpx’라는 이름으로 나타납니다. 직접 입력할 때는 이름·설명·지침을 각각 복사해 붙여 넣습니다. '
+                  '이때는 스크립트가 들어가지 않아 도식 같은 기능이 동작하지 않을 수 있습니다. 내용은 고치지 않습니다.</p>'
+                + f'<p class="muted"><small>출처: <a href="{SKILL_REPO}" target="_blank" rel="noopener">github.com/jkf87/hwpx-skill</a> (v1.18.0)</small></p>')
     return Sec(0, "작성 4 실습: hwpx-writer 스킬 만들기", k, html, step=["작성"])
 
 
