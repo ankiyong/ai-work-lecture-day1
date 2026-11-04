@@ -1,5 +1,5 @@
 """v3: 실습을 작업 하나씩 나눈 프롬프트(content_p)로 바꾼 판.
-수강생: 신규 실습(공통 규칙 ~ ⑳ 초안) + 개정안 07~10.
+수강생: 신규 실습(공통 규칙 ~ ⑳~㉒ 초안) + 개정안 07~10.
 강사: 개정안 01·02 → 신규 실습(프로세스 ~ 2-①) → 04 → 신규 2-②·3·초안 → 개정안 07·08 → 쉬어가기 → 09·10."""
 import pathlib
 import re
@@ -11,7 +11,8 @@ import content_c as X
 import content_info as I
 import content_p as P
 import content_v2 as V
-from lib import Mod, Sec, call, card, cards, e, flow, is_i, prompt, source
+from builder import builder
+from lib import Mod, Sec, call, card, cards, check, e, fields, flow, is_i, lines, only_s, p, prompt, raw_card, source, table
 from motion import paths, stack
 
 STEPS = ("보고서 흐름", ["규칙", "1", "2-①", "2-②", "3", "초안", "작성", "검토"])
@@ -189,26 +190,92 @@ def skill_practice(k):
     return Sec(0, "작성 4 실습: hwpx-writer 스킬 만들기", k, html, step=["작성"])
 
 
-M08_SWAP = [  # 기존 개정안 08의 스킬 이름·스킬 만들기 흔적을 hwpx-writer 기준으로
-    ("&#x27;공공 보고서 HWPX 작성&#x27; 스킬", "hwpx-writer 스킬"),
-    ("Claude · 공공 보고서 HWPX 작성", "Claude · hwpx-writer"),
-    ("<td>작성 3</td><td>스킬 규칙 보완 뒤 다시 작성</td>", "<td>작성 5</td><td>깨진 위치를 알려 주고 다시 작성 요청</td>"),
-    ("<h4>재사용할 작성 스킬</h4><ul><li>내가 정한 작성 기준</li>", "<h4>HWPX 양식 + hwpx-writer 작성 절차</h4><ul><li>스킬은 그대로, 내용만 바꿔서</li>"),
+M08_SWAP = [  # 그대로 쓰는 장의 개정안 표현(결정 기록·근거 번호 S1~S6)을 v3 실습(현황표·⑳~㉒ 초안) 기준으로
+    ("확인한 근거 · HWPX 양식", "현황표 · HWPX 양식"),
+    ("S2·S4 보완 절차는 그대로 유지", "보완요청 절차 자체는 그대로 유지"),
+    ("근거 번호와 함께 배치", "출처와 함께 배치"),
 ]
+W_INPUTS = [("확정 기획안", "㉒ 초안 · ‘확인 필요’ 정리 후"), ("현황표", "마지막 현황표 · 확정 항목"), ("HWPX 양식", "빈 양식 원본")]
+W_RULES = "기획안에 있는 내용만 써. [확인 필요]·[자료 없음] 자리는 채우지 말고 미정 사항 목록으로 알려 줘. 내 판단과 문장은 바꾸지 마."
+W_OUT = "새 HWPX 파일 (원본 양식 보존) + 미정 사항 목록 + 수행한 검사·못 한 검사"
+
+
+def inputs_v3():
+    """투입 3종: ㉒ 초안을 정리한 확정 기획안 · 현황표 · HWPX 양식 → hwpx-writer."""
+    if not is_i():
+        return (cards(*(card(a, b) for a, b in W_INPUTS)) + f'<p class="linkrow">{X.form_link()}</p>'
+                + cards(card("작성 스킬", "Claude · hwpx-writer", dark=True), card("보고서 HWPX 초안", "미정 사항 목록 · 검사 결과"), n=2))
+    a = "".join(f'<div class="card" style="--i:{i}"><h4>{e(x)}</h4><p>{e(y)}</p></div>' for i, (x, y) in enumerate(W_INPUTS))
+    return (f'<div class="ioscene"><div class="ins">{a}</div><span class="pulse">→</span>'
+            '<div class="card dark tool"><span class="gear" aria-hidden="true">⚙</span><h4>작성 스킬</h4><p>Claude · hwpx-writer</p></div><span class="pulse">→</span>'
+            '<div class="card out"><span class="fileic" aria-hidden="true">HWPX</span><h4>보고서 HWPX 초안</h4><p>미정 사항 목록 · 검사 결과</p></div></div>')
+
+
+def m08_secs(old):
+    """개정안 08에서 결정 기록 ①~④·기획안 자동 입력에 기대던 장을 다시 만든다. old: 제목 → 기존 장."""
+    def keep(key, body, **kw):
+        s = old[key]
+        return Sec(s.pages, kw.pop("title", key), s.kicker, body, role=s.role, step=kw.pop("step", s.step), **kw)
+    gaps = table(["발견한 빈틈", "돌아갈 단계", "보완 방법"],
+                 [["기획안 문장이 바뀌어 들어감", "초안 ⑳~㉒", "확정 기획안을 그대로 다시 전달"],
+                  ["근거 없는 문장·수치", "2-① ⑤~⑦", "원문 확인 뒤 확인 기록에 추가"],
+                  ["문제·목적이 흔들림", "1 ③·④", "문제 정의·보고 목적 다시 확정"],
+                  ["선택 이유가 약함", "2-② ⑨·⑩", "비교 기준 보완 뒤 다시 선택"],
+                  ["담당·일정·예산이 빔", "3 ⑪~⑬", "실제 여건 확인 뒤 확정"],
+                  ["양식 깨짐·안내 문구가 남음", "작성 5", "깨진 위치를 알려 주고 다시 작성 요청"]])
+    gap_card = raw_card('<div class="tag">내 보고서에서</div><h4>빈틈 1개를 찾아 돌아갈 단계를 적는다</h4>'
+                        + lines("완성본에서 덧칠하지 않기", "해당 단계를 고친 뒤 다시 작성", "고친 이유를 기록")
+                        + '<div class="pill">어느 단계로 돌아갈까?</div>', dark=True)
+    return {
+        "투입은 3종: 기획안·근거·양식": keep("투입은 3종: 기획안·근거·양식", inputs_v3(), title="투입은 3종: 기획안·현황표·양식"),
+        "빈칸 채우기: 스킬로 보고서 작성": keep(
+            "빈칸 채우기: 스킬로 보고서 작성",
+            builder("q11", 1, "hwpx-writer로 양식에 맞춰 보고서를 작성한다",
+                    ("첨부: 확정 기획안, 마지막 현황표, 빈 HWPX 양식\n확정 기획안: [[#확정 기획안|㉒ 초안에서 확인 필요 표시를 정리한 본문, 문구 그대로 전달됩니다]]",
+                     "hwpx-writer 스킬로 이 양식에 맞춰 보고서를 작성해 줘.", W_OUT, W_RULES),
+                    extras=["문체", "분량", "출처 표기 위치"],
+                    tip="㉒ 초안의 [확인 필요]는 직접 채우거나 지운 뒤 붙여 넣습니다. 보고서 완성이 중요한 단계라 빈칸형으로 제공합니다."),
+            title="빈칸 채우기: hwpx-writer로 보고서 작성"),
+        "점검: 보고서 작성 프롬프트": keep(
+            "점검: 보고서 작성 프롬프트",
+            prompt("예시 프롬프트 (민원 신청서) · 내 것과 비교",
+                   "[자료]  첨부: 확정 기획안, 마지막 현황표, 빈 HWPX 양식\n확정 기획안: 추진 배경 / 현황 및 문제 / 추진 목표 / 추진 방안 / 실행 계획 / 성과 관리 (㉒ 초안을 정리한 본문)\n"
+                   f"[요청]  hwpx-writer 스킬로 이 양식에 맞춰 보고서를 작성해 줘.\n[출력 형식]  {W_OUT}\n[규칙·기타]  {W_RULES}")
+            + check("내 프롬프트에 있나?", ("자료", "기획안·현황표·양식 세 가지를 첨부했는가"), ("출력 형식", "미정 사항 목록과 검사 결과를 받게 했는가"),
+                    ("규칙·기타", "내 판단과 문장을 바꾸지 못하게 했는가"))
+            + call("미정은 비워 두고 알려 준다 — AI가 채우지 않는다")),
+        "빈틈은 해당 기획 단계로 돌아가 보완한다": keep(
+            "빈틈은 해당 기획 단계로 돌아가 보완한다",
+            f'<div class="i-split wide"><div>{gaps}</div>{gap_card}</div>'
+            + only_s(fields("v2g", "내 보고서의 빈틈", ["발견한 빈틈", "돌아갈 단계", "고친 이유"], rows=1)),
+            step=["1", "2-①", "2-②", "3", "초안", "작성", "검토"]),
+        "오늘의 결과물 3가지": keep(
+            "오늘의 결과물 3가지",
+            cards(card("기획안 초안", "현황표로 확정한 문제·목적·대안", "‘확인 필요’를 직접 정리", big="1"),
+                  card("hwpx-writer 스킬", "스킬은 그대로, 내용만 바꿔서", "다음 보고서에도 사용", big="2"),
+                  card("완성 보고서 HWPX", "미정 사항 목록 포함", "최종 검토 완료", big="3", dark=True))
+            + call("완성 보고서는 다음 모듈에서 Gemini Notebook의 재료가 된다")),
+    }
 
 
 def m08():
     m = V.m08()
     m.title = m.title.replace("스킬로", "hwpx-writer로")
-    m.intro = m.intro.replace("작성 스킬을", "hwpx-writer 스킬을")
+    m.intro = "확정 기획안·현황표·HWPX 양식에 hwpx-writer 스킬을 적용하고, 완성 파일은 내가 직접 열어 최종 검토합니다."
+    new = m08_secs({s.title: s for s in m.secs})
     hits = {a: 0 for a, _ in M08_SWAP}
+    secs = []
     for s in m.secs:
-        s.title = s.title.replace("스킬로 보고서 작성", "hwpx-writer로 보고서 작성")
+        if s.title in new:
+            secs.append(new.pop(s.title))
+            continue
         for a, b in M08_SWAP:
             hits[a] += s.body.count(a)
             s.body = s.body.replace(a, b)
-    missed = [a for a, n in hits.items() if not n]
-    assert not missed, f"08 바꿀 문구를 찾지 못함: {missed}"
+        secs.append(s)
+    missed = [a for a, n in hits.items() if not n] + list(new)
+    assert not missed, f"08 바꿀 장·문구를 찾지 못함: {missed}"
+    m.secs = secs
     return m
 
 
@@ -271,12 +338,29 @@ def intro_secs():
     if not is_i():
         return [md_practice()] + P.intro_secs()
     secs = [D.intro_slide()] + V.intro_secs()  # 표지 다음에 강사소개
+    secs[2] = goal_sec(secs[2])
     for s in secs:  # 개정안 단계 이름(2①)을 v3 지도 이름(2-①)으로, 작성 스킬은 hwpx-writer로
         if s.step:
             s.step = [str(x).replace("2①", "2-①").replace("2②", "2-②") for x in s.step]
         for a, b in INTRO_SWAP:
             s.body = s.body.replace(a, b)
     return secs
+
+
+def goal_sec(old):
+    """오늘의 도착점: 결정 기록 ①~④ 대신 v3 실습(현황표에 쌓아 ⑳~㉒ 초안으로) 기준. 모듈 번호는 강사 슬라이드 순서."""
+    assert old.title == "기획은 내가 결정하고, 작성은 스킬이 돕는다", old.title
+    road = [("1", "04", "문제와 보고 목적"), ("2-①", "05", "규정·선례 확인 · 선택"), ("2-②", "07", "목표·대안 결정"),
+            ("3", "08", "실행·평가 계획 · 선택"), ("초안", "09", "기획안 초안")]
+    lis = "".join(f'<li style="--i:{i}"><b>{n}</b><small>모듈 {m}</small><span>{e(t)}</span></li>' for i, (n, m, t) in enumerate(road))
+    body = (p("기획 단계마다 AI가 정리하고 내가 확정한 내용을 현황표에 쌓아, 마지막에 기획안 초안 하나로 모은다", "lead")
+            + '<div class="road"><div class="rp"><h5>기획 단계  현황표로 누적 정리</h5>'
+            + f'<ol class="nine" style="grid-template-columns:repeat(5,minmax(0,1fr))">{lis}</ol>'
+            + '<p class="muted"><b>사람</b> 문제 정의·근거 해석·결정 &nbsp;·&nbsp; <b>AI</b> 검색·정리·비교·문서화</p></div>'
+            + '<div class="rp"><h5>작성 5단계 → 최종 검토</h5><ol class="v3"><li>1~2  양식 확인·HWPX 저장</li><li>3~4  hwpx-writer 스킬 이해·만들기</li>'
+            + '<li>5  hwpx-writer로 보고서 작성</li><li class="on">사람  완성 파일 최종 검토</li></ol><p class="muted"><b>모듈 10·11 · Claude</b></p></div></div>'
+            + p("최종 산출물: 기획안 초안(현황표 기준), hwpx-writer 스킬, 완성 보고서 HWPX", "muted"))
+    return Sec(old.pages, old.title, old.kicker, body, role=old.role, step=old.step)
 
 
 INTRO_SWAP = [

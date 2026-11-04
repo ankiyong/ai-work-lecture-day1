@@ -10,7 +10,7 @@ from lib import Sec, Mod, e, is_i, only_s, card, prompt
 from motion import person, robot
 
 STEPS = ("실습 단계", ["규칙", "1", "2-①", "2-②", "3", "초안"])
-NUM = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳"
+NUM = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒"
 STAGE = {"1": "1. 문제와 목적 정리", "2-①": "2-①. 규정과 선례 확인", "2-②": "2-②. 목표와 해결방안 설계", "3": "3. 실행과 평가 계획",
          "초안": "기획안 초안 작성"}
 REQ = {"1": True, "2-①": False, "2-②": True, "3": False, "초안": True}
@@ -263,33 +263,42 @@ TASKS = [
 
 측정 대상·산식·자료 출처·시점·판정 기준을 살펴봐줘.
 지표나 목표치를 대신 변경하지 마.""", "", ""),
-    (20, "초안", "기획안 초안 작성", "기획안 초안", "새 사실·수치·효과 추가, 내 판단 변경", """아래는 내가 앞 작업에서 확정한 내용이다.
-이 내용으로 기획안 초안을 작성하는 작업만 해줘.
+    (20, "초안", "지금까지 정해진 내용 정리", "확정 내용표 + 확정되지 않은 내용 목록", "후보·미확인을 확정으로 올리기, 대화에 없던 내용 추가", """지금까지 이 대화에서 나온 내용 중 내가 확정한 것만 모아 정리해줘.
 
-[문제 정의 (③)]
-[[#문제 정의|여기에 입력]]
+결과는 다음 표 하나로 작성해줘.
+항목 / 확정한 내용 / 정한 곳(작업 번호 또는 내 답변) / 근거·출처
 
-[보고 목적 (④)]
-[[#보고 목적|여기에 입력]]
+항목: 핵심 문제, 대상·범위, 보고 목적, 규정·선례, 목표, 선택한 대안, 실행·평가 계획
 
-[원문 확인 기록 (⑦)]
-[[#원문 확인 기록|진행하지 않았다면 없음이라고 입력]]
+내가 확정했다고 말한 내용만 표에 넣어줘.
+후보·미정·미확인 상태인 내용은 표에 넣지 말고, 표 아래 '확정되지 않은 내용' 목록으로 따로 보여줘.
+확정했는지 애매한 내용은 확정으로 넣지 말고 목록 끝에 확인 질문으로 적어줘.
+진행하지 않은 단계의 항목은 '진행하지 않음'으로 적어줘.
+내가 정한 문장의 뜻을 바꾸지 말고, 대화에 없던 내용은 덧붙이지 마.
+결과는 확정 내용표와 확정되지 않은 내용 목록만 출력해줘.""", "입력할 것이 없습니다. ①~⑲를 진행한 같은 채팅에 그대로 붙여 넣습니다.",
+     "빠지거나 잘못 들어간 내용이 있으면 이 채팅에서 바로 고쳐 말한 뒤 ㉑로 넘어갑니다."),
+    (21, "초안", "초안 정리: 개요에 배치", "개요별 배치표", "본문 쓰기, 빈 항목 채우기", """위에서 정리한 확정 내용을 아래 개요에 맞게 배치해줘.
 
-[목표 정리표 (⑧)]
-[[#목표 정리표|여기에 입력]]
+[개요]
+[[#개요|여기에 입력|예: 1. 추진 배경 / 2. 현황 및 문제 / 3. 추진 목표 / 4. 추진 방안 / 5. 실행 계획 / 6. 성과 관리]]
 
-[선택 기록표 (⑩)]
-[[#선택 기록표|여기에 입력]]
+결과는 다음 표 하나로 작성해줘.
+개요 항목 / 배치할 확정 내용 / 가져온 항목 / 비어 있는 부분
 
-[실행·평가 계획 (⑪~⑮)]
-[[#실행·평가 계획|진행하지 않았다면 없음이라고 입력]]
+확정 내용표에 있는 내용만 배치하고, 새 내용을 만들지 마.
+한 내용을 여러 개요 항목에 나눠 넣을 수 있어.
+어느 개요 항목에도 맞지 않는 내용은 표 아래 '배치하지 못한 내용'으로 적어줘.
+채울 내용이 없는 개요 항목은 비워 두고, '비어 있는 부분'에 어떤 내용이 필요한지만 적어줘.
+본문 문장은 아직 쓰지 마.""", "", "배치가 마음에 들지 않으면 ‘○○는 △△ 항목으로 옮겨줘’처럼 고친 뒤 ㉒로 넘어갑니다."),
+    (22, "초안", "초안 작성: 본문 쓰기", "기획안 초안 본문", "새 사실·수치·효과 추가, 내 판단 변경", """위 배치표대로 개요 순서에 맞춰 기획안 초안 본문을 작성해줘.
 
-[초안 목차]
-[[#초안 목차|여기에 입력|예: 추진 배경 / 현황 및 문제 / 추진 목표 / 추진 방안 / 실행 계획 / 성과 관리]]
+[문체·분량]
+[[문체·분량|여기에 입력|예: 개조식, A4 2쪽 이내]]
 
-내가 제공한 내용만 사용해서 목차 순서대로 작성해줘.
-제공되지 않은 사실·수치·출처·효과는 추가하지 말고, 필요한 자리에는 [확인 필요]로 표시해줘.
-없음으로 적은 항목에 해당하는 부분은 [자료 없음]으로 표시해줘.
+배치표에 있는 확정 내용만 사용해서 본문을 써줘.
+항목을 잇는 문장은 써도 되지만, 새 사실·수치·출처·효과는 추가하지 마.
+근거가 필요한 자리에는 [확인 필요]로 표시해줘.
+비어 있는 개요 항목은 [자료 없음]으로 표시해줘.
 내 판단과 선택을 바꾸거나 보충하지 마.
 결과는 기획안 초안 본문만 출력해줘.""", "", "초안은 다음 단계(HWPX 양식과 작성 스킬)에서 ‘확정 기획안’으로 씁니다. 먼저 [확인 필요] 표시를 직접 채우거나 지웁니다."),
 ]
@@ -345,7 +354,7 @@ def task_sec(i):
                 + f'<div class="col">{side}</div></div>' + post)
     else:
         body = (meta + pre
-                + f'<div class="tpl"><div class="ph"><span>프롬프트 {n(num)} · 빈칸을 채운 뒤 복사</span><button type="button" class="btn pri" data-tcopy>복사</button></div>'
+                + f'<div class="tpl"><div class="ph"><span>프롬프트 {n(num)} · {"빈칸을 채운 뒤 복사" if "[[" in text else "그대로 복사"}</span><button type="button" class="btn pri" data-tcopy>복사</button></div>'
                 + f'<div class="tv">{tpl(f"t{num:02d}", text)}</div></div>' + post)
     tag = "필수" if REQ[st] else "선택"
     return Sec(0, f"{n(num)} {title}", f"{STAGE[st]} · {tag}", body, step=(st,))
@@ -496,8 +505,12 @@ def m3():
 
 
 def m_draft():
-    return Mod("초안", "기획안 초안 작성", "", "", "기획안 초안", "",
-               "필수 · 앞에서 확정한 결과만 모아 초안 하나를 씁니다 (⑳).", [task_sec(20)])
+    flow = "".join(f'<div class="pk" style="--i:{d}"><span class="pkn">{i}</span><span><b>{e(T[i][2])}</b><small>{e(T[i][3])}</small></span></div>'
+                   + ('<span class="parr">→</span>' if d < 2 else "") for d, i in enumerate((20, 21, 22)))
+    first = Sec(0, "초안 진행 순서", f'{STAGE["초안"]} · 필수', f'<div class="pline">{flow}</div>'
+                '<p class="pnote">⑳은 이 채팅에서 확정한 내용만 AI가 모아 보여 줍니다. ㉑에는 내가 원하는 개요를, ㉒에는 문체·분량만 넣습니다.</p>', step=("초안",))
+    return Mod("초안", "기획안 초안 작성", "", "", "확정 내용표, 개요별 배치표, 기획안 초안", "",
+               "필수 · 세 가지 작업 ⑳~㉒로 나눕니다. 확정한 내용 정리 → 개요에 배치 → 본문 작성.", [first] + [task_sec(i) for i in (20, 21, 22)])
 
 
 def modules():
@@ -584,7 +597,7 @@ label.pk{cursor:pointer}.pk:has(input:checked){border-color:var(--blue);backgrou
 .pk input{width:18px;height:18px;accent-color:var(--blue);margin-top:5px;flex:none}.pk b{display:block;font-size:15px;line-height:1.35}.pk small{display:block;font-size:12.5px;color:var(--mid)}
 .puser{display:flex;gap:10px;align-items:center;border:2px dashed #e8580c;border-radius:12px;padding:10px 12px;background:#fff8f2;font-size:14.5px;font-weight:600;color:#b44a05}
 .parr{text-align:center;color:var(--soft);font-size:22px}
-.pline{display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr) 26px minmax(0,1fr);align-items:center;gap:8px}.pline .pk b{white-space:nowrap}
+.pline{display:grid;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr) 26px minmax(0,1fr);align-items:center;gap:8px}
 .pbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.pbtns small{color:var(--mid);font-size:13.5px}
 .pempty{border:1px dashed var(--soft);border-radius:10px;padding:10px 14px;color:var(--mid);font-size:14px}
 .tkh{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.tkm{display:flex;gap:6px;flex-wrap:wrap}
@@ -597,7 +610,7 @@ label.pk{cursor:pointer}.pk:has(input:checked){border-color:var(--blue);backgrou
 .pexr{display:grid;grid-template-columns:28px 44px minmax(0,1fr) auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px}
 .pexr>b{font-size:14.5px}.pexo{display:flex;gap:10px;align-items:center;font-size:15px}
 .pstop{color:#e8580c;border:2px solid #e8580c;border-radius:99px;padding:3px 10px;font-size:12.5px;font-weight:700;white-space:nowrap}
-@media(max-width:680px){.pline .pk b{white-space:normal}.pmap,.pproc,.pline,.prow.n5,.prow.n4,.rgroups{grid-template-columns:minmax(0,1fr)}.pst+.pst:before{content:"↓";left:50%;top:-20px}.pproc .parr,.pline .parr{transform:rotate(90deg)}.pexr{grid-template-columns:28px minmax(0,1fr)}.pexr>b,.pstop{display:none}}
+@media(max-width:680px){.pmap,.pproc,.pline,.prow.n5,.prow.n4,.rgroups{grid-template-columns:minmax(0,1fr)}.pst+.pst:before{content:"↓";left:50%;top:-20px}.pproc .parr,.pline .parr{transform:rotate(90deg)}.pexr{grid-template-columns:28px minmax(0,1fr)}.pexr>b,.pstop{display:none}}
 """
 
 DECK_CSS = """
@@ -613,7 +626,7 @@ DECK_CSS = """
 .slide .rgroups{grid-template-columns:1fr}.slide .rgroups b{font-size:16.5px}.slide .rgroups small{font-size:14.5px}
 .slide .pk{padding:14px 16px}.slide .pk b{font-size:18.5px}.slide .pk small{font-size:15px}.slide .plab{font-size:16px}.slide .puser{font-size:18px;padding:14px 16px}
 .active .pk{animation:rise .4s ease both;animation-delay:calc(.1s + var(--i)*.15s)}.active .puser{animation:pop .45s ease both .9s}
-.slide .pproc{grid-template-columns:minmax(0,1fr) 34px minmax(0,.85fr) 34px minmax(0,1fr)}.slide .pline{grid-template-columns:auto 34px auto 34px auto;justify-content:center}
+.slide .pproc{grid-template-columns:minmax(0,1fr) 34px minmax(0,.85fr) 34px minmax(0,1fr)}.slide .pline{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr) 34px minmax(0,1fr)}
 .slide .tnote{font-size:17px}
 .slide .stt td,.slide .stt th{font-size:16px;padding:8px 12px;height:auto}.slide .stx{font-size:14px}
 .stt.live .v{display:none}.stt.live .v0{display:inline}.slide[data-step="1"] .stt.live .v0,.slide[data-step="2"] .stt.live .v0{display:none}
