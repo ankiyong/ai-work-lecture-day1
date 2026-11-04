@@ -16,7 +16,7 @@ from motion import paths, stack
 
 STEPS = ("보고서 흐름", ["규칙", "1", "2-①", "2-②", "3", "초안", "작성", "검토"])
 BREAKS = {"09": V.BREAKS["09"]}
-CSS = V.CSS + P.CSS + D.CSS
+CSS = V.CSS + P.CSS + D.CSS + "\n.nm b{flex:none;white-space:nowrap}"  # 목차 번호(07·08)가 두 줄로 갈라지지 않게
 JS = P.JS
 DECK_JS = r"""
 (function () {
@@ -91,7 +91,7 @@ def robot_video():
     """현장 로봇 장 앞의 영상. 장에 오면 처음부터 재생하고, 끝나면 다음 장으로 넘어간다 (DECK_JS)."""
     body = ('<div class="vplay"><div><small>01-2 · 이미 생긴 변화들</small><h2>“인간 VS 로봇”<br>10시간 택배 작업 대결</h2></div>'
             '<video data-auto src="../assets/video/robot-vs-human.mp4" controls playsinline preload="auto"></video>'
-            '<p>영상이 끝나면 다음 장으로 넘어갑니다</p></div>')
+            '<span></span></div>')
     return Sec(0, "영상: 인간 VS 로봇 택배 작업 대결", "video-slide", body, role="i", kind="raw")
 
 
